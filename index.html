@@ -293,6 +293,9 @@ label.f{display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--mu
 .settings{max-width:760px}
 .settings h2{font-size:22px;margin:26px 0 6px}
 .settings .grid{grid-template-columns:1fr;margin-top:12px}
+.steps{margin:8px 0 0;padding-left:22px;line-height:1.7;color:#e6dccd}
+.adv{margin-top:18px;border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+.adv summary{cursor:pointer;color:var(--muted);font-weight:600}
 .btn.icon{padding:8px 10px;display:inline-flex;align-items:center;color:var(--muted)}
 a.btn{text-decoration:none;color:inherit;display:inline-flex;align-items:center}
 a.btn.primary{color:#22180c}
@@ -1509,6 +1512,15 @@ const DEFAULT_SHELVES = [
   ["mm-work","MM Workplace Romance","genre","MM Workplace Romance","#00796B",9],["mm-dark","MM Dark Romance","genre","MM Dark Romance","#5E0A1A",10],
   ["mm-fantasy","MM Fantasy Romance","genre","MM Fantasy Romance","#6B2C91",11],["mm-holiday","MM Holiday Romance","genre","MM Holiday Romance","#0A8047",12]
 ];
+/* Tab ids in "Books, Movies & Music Tracker", so one published link is enough */
+const DEFAULT_GIDS = { tbr: "1489619976", tbw: "1844088188", showReviews: "2111002717", albums: "1273753509", musicReviews: "301" };
+function linksFromPublished(url){
+  const m = String(url || "").match(/\/spreadsheets\/d\/e\/([A-Za-z0-9_-]+)/);
+  if(!m) return null;
+  const base = `https://docs.google.com/spreadsheets/d/e/${m[1]}/pub`;
+  const out = {}; for(const [k, gid] of Object.entries(DEFAULT_GIDS)) out[k] = `${base}?gid=${gid}&single=true&output=csv`;
+  return out;
+}
 const SHEET_TABS = [
   ["tbr","TBR List","Your books to read"],
   ["tbw","TBW List","Movies and shows to watch"],
@@ -1818,19 +1830,41 @@ function renderSettings(){
   const s = SETTINGS.sheets || {};
   return `<div class="view-head"><h1>Settings</h1></div>
   <section class="settings">
-    <h2>Your sheet</h2>
-    <p class="sub">In Google Sheets, open <b>File → Share → Publish to web</b>. Open <b>Published content &amp; settings</b>, choose the tabs below (or Entire document), and click <b>Publish</b>. Then, under <b>Link</b>, pick a tab, choose <b>Comma-separated values (.csv)</b>, and copy the link into its box here. Repeat for each tab. Leave a box empty if you don't track that list.</p>
-    <form id="sheetForm" class="grid" novalidate>
-      ${SHEET_TABS.map(([k, tab, help]) => `<label class="f full">${esc(tab)} <span class="hint">${esc(help)}</span><input id="s-${k}" type="url" placeholder="https://docs.google.com/spreadsheets/d/e/…/pub?gid=…&output=csv" value="${esc(s[k] || "")}"></label>`).join("")}
-      <div class="full row"><button class="btn primary" type="submit">Save links</button><button class="btn" type="button" data-import>Refresh from sheet</button></div>
-      <p class="err full" id="s-err">${sheetErrors.length ? "Couldn't read: " + esc(sheetErrors.join(", ")) + ". Check those links are published as CSV." : ""}</p>
+    <h2>Connect your sheet</h2>
+    <ol class="steps">
+      <li>Open your <b>Books, Movies &amp; Music Tracker</b> in Google Sheets.</li>
+      <li>Click <b>File → Share → Publish to web</b>.</li>
+      <li>Leave the two boxes as they are (<b>Entire document</b> and <b>Web page</b>) and click <b>Publish</b>, then <b>OK</b>.</li>
+      <li>Copy the link it shows and paste it below.</li>
+    </ol>
+    <form id="pubForm" class="grid" novalidate>
+      <label class="f full">Published sheet link<input id="s-pub" type="url" placeholder="https://docs.google.com/spreadsheets/d/e/2PACX-…/pubhtml" value="${esc(SETTINGS.published || "")}"></label>
+      <div class="full row"><button class="btn primary" type="submit">Connect sheet</button><button class="btn" type="button" data-import>Refresh from sheet</button></div>
+      <p class="err full" id="s-err">${sheetErrors.length ? "Couldn't read: " + esc(sheetErrors.join(", ")) + "." : ""}</p>
     </form>
+    <details class="adv"><summary>Set each tab's link separately</summary>
+      <p class="sub">Only needed if your sheet's tabs are different from Geno's tracker. For each tab: <b>Publish to web</b> → under <b>Link</b>, pick the tab and <b>Comma-separated values (.csv)</b> → copy.</p>
+      <form id="sheetForm" class="grid" novalidate>
+        ${SHEET_TABS.map(([k, tab, help]) => `<label class="f full">${esc(tab)} <span class="hint">${esc(help)}</span><input id="s-${k}" type="url" value="${esc(s[k] || "")}"></label>`).join("")}
+        <div class="full row"><button class="btn" type="submit">Save tab links</button></div>
+      </form>
+    </details>
     <h2>Account</h2>
     <p class="sub">Signed in as <b>${esc(EMAIL)}</b></p>
     <div class="row"><button class="btn" type="button" id="signOut">Sign out</button></div>
   </section>`;
 }
 function wireSettings(){
+  const pf = document.getElementById("pubForm");
+  if(pf) pf.addEventListener("submit", async e => {
+    e.preventDefault();
+    const err = document.getElementById("s-err"); err.textContent = "";
+    const url = document.getElementById("s-pub").value.trim();
+    const sheets = linksFromPublished(url);
+    if(!sheets){ err.textContent = "That doesn't look like a published link. It should start with https://docs.google.com/spreadsheets/d/e/"; return; }
+    try{ await saveSettings({ ...SETTINGS, published: url, sheets }); await loadSheets(); toast(sheetErrors.length ? "Connected, but some tabs couldn't be read." : "Sheet connected."); render(); }
+    catch(_){ err.textContent = "Couldn't save. Check your connection and try again."; }
+  });
   const f = document.getElementById("sheetForm"); if(!f) return;
   f.addEventListener("submit", async e => {
     e.preventDefault();
