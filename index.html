@@ -1,0 +1,1877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Geno's Library</title>
+<meta name="theme-color" content="#14100d">
+<meta name="referrer" content="no-referrer">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Geno's Library">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Gloock&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* layout: a walnut library; the main shelf is one tall bookcase of every TBR spine, genre shelves are niches tinted with the sheet's jewel-tone genre colors */
+  --ink:#14100d;
+  --panel:#1f1914;
+  --raise:#2a221b;
+  --line:#3e3329;
+  --text:#f3ece2;
+  --muted:#b4a796;
+  --accent:#d8b36a;
+  --wood:#4a3220;
+  --wood-dark:#2c1d12;
+  --display:"Gloock", Georgia, "Times New Roman", serif;
+  --body:"Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--ink);color:var(--text);font-family:var(--body);font-size:16px;line-height:1.45}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+img{max-width:100%}
+[hidden]{display:none !important}
+
+.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--ink) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top-in{max-width:1240px;margin:0 auto;padding:14px 20px 0;display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px 20px}
+.brand{font-family:var(--display);font-size:30px;line-height:1;margin:0 auto 12px 0}
+.brand small{display:block;font-family:var(--body);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-top:6px}
+.tabs{display:flex;gap:2px;order:3;width:100%;overflow-x:auto}
+.tab{background:none;border:0;padding:10px 14px;border-bottom:2px solid transparent;color:var(--muted);font-weight:600;white-space:nowrap}
+.tab[aria-current="page"]{color:var(--text);border-bottom-color:var(--accent)}
+.actions{display:flex;gap:8px;align-items:center;margin-bottom:12px}
+.sync{font-size:12px;color:var(--muted)}
+.btn{border:1px solid var(--line);background:var(--raise);padding:9px 14px;border-radius:8px;font-weight:600}
+.btn:hover{border-color:var(--muted)}
+.btn:disabled{opacity:.55;cursor:default}
+.btn.primary{background:var(--accent);color:#22180c;border-color:var(--accent)}
+.btn.ghost{background:none}
+.btn.small{padding:6px 10px;font-size:14px}
+.btn.danger{color:#ffb3b3}
+main{max-width:1240px;margin:0 auto;padding:22px 20px 80px}
+.banner{background:#33281b;border:1px solid #67512f;color:#f1dfc2;padding:12px 14px;border-radius:8px;margin-bottom:18px;font-size:14px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.view-head{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:16px}
+.view-head h1{font-family:var(--display);font-weight:400;font-size:28px;margin:0;text-wrap:balance}
+.sub{color:var(--muted);font-size:14px;margin:4px 0 0}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.search{flex:1 1 220px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:9px 12px;min-width:0}
+select.sel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:9px 10px}
+.toggle{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted)}
+.linkish{background:none;border:0;color:var(--accent);text-decoration:underline;padding:0}
+.hidden-note{font-size:14px;color:var(--muted)}
+
+/* spines */
+.spine{flex:none;height:var(--h,230px);border:0;padding:0;background:none;position:relative;transition:transform .18s ease;transform-origin:bottom center;border-radius:2px 2px 0 0;box-shadow:2px 0 4px rgba(0,0,0,.4)}
+.spine:hover,.spine:focus-visible{transform:translateY(-8px)}
+.spine img{display:block;width:100%;height:100%;object-fit:cover;border-radius:2px 2px 0 0}
+.spine.blank{--g:#7a6a5a;--sg:var(--g);color:#f7efe1;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:16px 0 14px;
+  background:linear-gradient(90deg,rgba(0,0,0,.30),rgba(255,255,255,.13) 20%,rgba(255,255,255,0) 46%,rgba(0,0,0,.24)),var(--sg)}
+.spine.blank.b1{background:linear-gradient(180deg,transparent 0 10px,rgba(238,212,150,.75) 10px 12px,transparent 12px 15px,rgba(238,212,150,.75) 15px 16px,transparent 16px calc(100% - 16px),rgba(238,212,150,.75) calc(100% - 16px) calc(100% - 15px),transparent calc(100% - 15px) calc(100% - 12px),rgba(238,212,150,.75) calc(100% - 12px) calc(100% - 10px),transparent calc(100% - 10px)),linear-gradient(90deg,rgba(0,0,0,.30),rgba(255,255,255,.13) 20%,rgba(255,255,255,0) 46%,rgba(0,0,0,.24)),var(--sg)}
+.spine.blank.b2{background:linear-gradient(180deg,transparent 0 calc(100% - 46px),rgba(0,0,0,.32) calc(100% - 46px)),linear-gradient(90deg,rgba(0,0,0,.30),rgba(255,255,255,.13) 20%,rgba(255,255,255,0) 46%,rgba(0,0,0,.24)),var(--sg)}
+.spine.blank.b3{background:linear-gradient(180deg,rgba(255,255,255,.16) 0 30px,transparent 30px),linear-gradient(90deg,rgba(0,0,0,.30),rgba(255,255,255,.13) 20%,rgba(255,255,255,0) 46%,rgba(0,0,0,.24)),var(--sg)}
+.spine.blank .t{writing-mode:vertical-rl;font-family:var(--display);font-size:14px;text-shadow:0 1px 1px rgba(0,0,0,.35);line-height:1.05;max-height:calc(var(--h,230px) - 90px);overflow:hidden;text-align:center}
+.spine.blank .a{writing-mode:vertical-rl;font-size:9px;letter-spacing:.08em;text-transform:uppercase;opacity:.85;max-height:50px;overflow:hidden}
+.spine .badge{position:absolute;top:13px;left:50%;transform:translateX(-50%);width:8px;height:8px;border-radius:50%;background:#fff;box-shadow:0 0 0 2px rgba(0,0,0,.4)}
+
+/* main bookcase */
+.case{--h:200px;--wall:#241a12;position:relative;display:flex;flex-wrap:wrap;align-items:flex-end;gap:26px 2px;padding:16px 18px 26px;border-radius:12px;
+  background:
+    repeating-linear-gradient(180deg,transparent 0 var(--h),var(--wood) var(--h) calc(var(--h) + 6px),var(--wood-dark) calc(var(--h) + 6px) calc(var(--h) + 14px),transparent calc(var(--h) + 14px) calc(var(--h) + 26px)) 0 16px / 100% calc(100% - 16px) no-repeat,
+    radial-gradient(120% 60% at 50% 0%,color-mix(in srgb,var(--wall) 70%,#fff 6%),transparent 70%),
+    var(--wall);
+  border:10px solid var(--wood-dark);box-shadow:inset 0 0 30px rgba(0,0,0,.55)}
+.case.tinted{--wall:color-mix(in srgb,var(--c) 55%,#0d0907)}
+.more{display:flex;justify-content:center;margin-top:16px;gap:10px;align-items:center;color:var(--muted);font-size:14px}
+
+/* genre shelves */
+.shelf{--c:#7a6a5a;margin-bottom:34px}
+.shelf-head{display:flex;align-items:baseline;gap:12px;margin-bottom:8px;flex-wrap:wrap}
+.plaque{font-family:var(--display);font-weight:400;font-size:22px;margin:0;display:flex;align-items:center;gap:10px}
+.plaque::before{content:"";width:12px;height:12px;border-radius:3px;background:var(--c);flex:none}
+.rule,.count{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.shelf-head .right{margin-left:auto;display:flex;gap:6px}
+.niche{--h:230px;position:relative;border-radius:10px 10px 0 0;padding:22px 18px 0;min-height:262px;display:flex;align-items:flex-end;gap:2px;overflow-x:auto;
+  background:radial-gradient(120% 90% at 50% 0%,color-mix(in srgb,var(--c) 75%,#fff 10%) 0%,transparent 70%),linear-gradient(180deg,color-mix(in srgb,var(--c) 60%,#0d0907) 0%,color-mix(in srgb,var(--c) 85%,#0d0907) 100%);
+  box-shadow:inset 0 14px 22px rgba(0,0,0,.4),inset 12px 0 18px rgba(0,0,0,.2),inset -12px 0 18px rgba(0,0,0,.2)}
+.ledge{height:16px;border-radius:0 0 6px 6px;background:linear-gradient(180deg,var(--wood),var(--wood-dark));box-shadow:0 10px 18px rgba(0,0,0,.5)}
+.empty-shelf{align-self:center;margin:auto;color:#fff;opacity:.8;font-size:14px;text-align:center;padding-bottom:28px;max-width:30ch}
+.seeall{flex:none;align-self:center;margin:0 8px 40px;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:10px 12px;font-weight:600;font-size:14px}
+
+/* read */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:22px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.stat b{display:block;font-family:var(--display);font-weight:400;font-size:30px;font-variant-numeric:tabular-nums}
+.stat span{font-size:13px;color:var(--muted)}
+.reviews{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:16px}
+.rcard{--c:#7a6a5a;background:var(--panel);border:1px solid var(--line);border-left:5px solid var(--c);border-radius:10px;padding:16px;display:grid;grid-template-columns:96px 1fr;gap:16px}
+.thumb{width:96px;height:144px;border-radius:4px;overflow:hidden;background:color-mix(in srgb,var(--c) 75%,#0d0907);display:flex;align-items:center;justify-content:center;text-align:center;font-family:var(--display);font-size:13px;padding:6px;color:#fff;border:0}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.thumb:has(img){padding:0}
+.cover:has(img){padding:0}
+.rcard h3{font-family:var(--display);font-weight:400;font-size:20px;margin:0;text-wrap:balance}
+.rcard .by{color:var(--muted);font-size:14px;margin:2px 0 8px}
+.rcard .rev{font-size:14px;color:#e6dccd;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;margin:8px 0 12px;white-space:pre-line}
+.meta{font-size:12px;color:var(--muted)}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.empty{background:var(--panel);border:1px dashed var(--line);border-radius:12px;padding:30px;text-align:center;color:var(--muted)}
+.empty h2{font-family:var(--display);font-weight:400;color:var(--text);margin:0 0 6px}
+.empty .btn{margin-top:10px}
+
+/* all books */
+.chip{border:1px solid var(--line);background:none;border-radius:999px;padding:6px 12px;font-size:14px;color:var(--muted)}
+.chip[aria-pressed="true"]{background:var(--text);color:var(--ink);border-color:var(--text)}
+.list{border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:14px}
+.lrow{display:grid;grid-template-columns:14px minmax(0,2fr) minmax(0,1.3fr) 90px 80px;gap:12px;align-items:center;padding:10px 14px;border:0;border-bottom:1px solid var(--line);background:var(--panel);width:100%;text-align:left}
+.lrow:last-child{border-bottom:0}
+.lrow:hover{background:var(--raise)}
+.dot{width:12px;height:12px;border-radius:3px}
+.ti{font-weight:600;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.au{color:var(--muted);font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pill{font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;border:1px solid var(--line);justify-self:start;white-space:nowrap}
+.pill.read{background:#2b3a26;border-color:#4a6342;color:#cfe6c8}
+.pill.reading{background:#3d321c;border-color:#6d5a31;color:#f1ddb0}
+.pill.dnf{background:#3d2424;border-color:#6b3b3b;color:#f0c0c0}
+
+/* modal */
+.overlay{position:fixed;inset:0;background:rgba(8,6,4,.75);z-index:50;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:24px 12px}
+.modal{background:var(--panel);border:1px solid var(--line);border-radius:14px;width:min(760px,100%);padding:22px}
+.modal h2{font-family:var(--display);font-weight:400;font-size:24px;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 14px}
+.grid .full{grid-column:1/-1}
+label.f{display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--muted);font-weight:600}
+.f input,.f select,.f textarea{background:var(--ink);border:1px solid var(--line);border-radius:8px;padding:9px 10px;color:var(--text);font-weight:400;font-size:15px}
+.f textarea{min-height:120px;resize:vertical}
+.hint{font-size:12px;color:var(--muted);font-weight:400}
+.foot{display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end;margin-top:18px;align-items:center}
+.foot .left{margin-right:auto}
+.photos{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.ph{background:var(--ink);border:1px dashed var(--line);border-radius:10px;padding:12px;display:flex;gap:12px;align-items:flex-start}
+.ph .pv{width:58px;height:120px;flex:none;border-radius:3px;background:var(--raise);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted);text-align:center}
+.ph .pv.cv{width:80px}
+.ph .pv img{width:100%;height:100%;object-fit:cover}
+.ph .ctl{display:flex;flex-direction:column;gap:6px;font-size:13px}
+.rating{display:flex;align-items:center;gap:10px}
+.starbox{cursor:pointer;touch-action:manipulation}
+.swatches{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.sw{width:30px;height:30px;border-radius:6px;border:2px solid transparent}
+.sw[aria-pressed="true"]{border-color:var(--text)}
+.checks{display:flex;flex-wrap:wrap;gap:8px}
+.checks label{display:flex;align-items:center;gap:6px;font-size:14px;background:var(--ink);border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+.err{color:#ffb3b3;font-size:14px}
+
+/* detail */
+.detail{--c:#7a6a5a;display:grid;grid-template-columns:210px minmax(0,1fr);gap:22px}
+.cover{width:210px;aspect-ratio:2/3;border-radius:6px;overflow:hidden;box-shadow:0 14px 30px rgba(0,0,0,.5);background:linear-gradient(160deg,color-mix(in srgb,var(--c) 85%,#fff 10%),color-mix(in srgb,var(--c) 70%,#0d0907));display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:18px;color:#fff}
+.cover img{width:100%;height:100%;object-fit:cover}
+.cover .ct{font-family:var(--display);font-size:22px;line-height:1.1}
+.cover .ca{font-size:13px;margin-top:10px;opacity:.85}
+.cover-note{font-size:12px;color:var(--muted);margin-top:8px;text-align:center}
+.detail h2{margin:0}
+.detail .by{color:var(--muted);margin:4px 0 12px}
+.facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 18px;margin:14px 0;padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.facts div{min-width:0}
+.facts dt{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.facts dd{margin:2px 0 0;font-size:15px;font-variant-numeric:tabular-nums}
+.facts .wide{grid-column:1/-1}
+.tchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.tchip{font-size:13px;padding:3px 9px;border-radius:999px;background:color-mix(in srgb,var(--c) 35%,var(--raise));border:1px solid color-mix(in srgb,var(--c) 60%,var(--line))}
+.syn{font-size:15px;line-height:1.6;color:#e9e0d2;max-width:65ch;white-space:pre-line}
+.syn-h{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600;margin:0 0 6px}
+.post-wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+.post-wrap canvas{width:100%;height:auto;border-radius:8px;border:1px solid var(--line)}
+.progress{height:8px;border-radius:99px;background:var(--raise);overflow:hidden;margin:12px 0}
+.progress span{display:block;height:100%;background:var(--accent);width:0}
+
+/* rooms */
+.rooms{display:flex;gap:4px;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:3px;margin-bottom:12px;order:2}
+.room{background:none;border:0;border-radius:999px;padding:7px 14px;font-weight:600;color:var(--muted);font-size:14px}
+.room[aria-current="page"]{background:var(--accent);color:#22180c}
+@media (max-width:640px){.rooms{order:3;width:100%;justify-content:center}.tabs{order:4}}
+
+/* VHS */
+.case.vhs{--h:206px;--wall:#1b1720}
+.tape{--g:#5b5650;flex:none;width:36px;height:var(--h,206px);border:0;padding:6px 4px;position:relative;border-radius:2px;display:flex;flex-direction:column;align-items:center;gap:6px;
+  background:repeating-linear-gradient(180deg,#1c1b1d 0 3px,#151416 3px 6px);box-shadow:inset 1px 0 0 #2e2c30,inset -1px 0 0 #0a0a0b,2px 0 4px rgba(0,0,0,.5);transition:transform .18s ease,filter .12s ease}
+.tape.box{width:44px;background:linear-gradient(90deg,#d8d2c6,#efe9de 30%,#d8d2c6);box-shadow:inset 0 0 0 1px rgba(0,0,0,.15),2px 0 4px rgba(0,0,0,.5)}
+.tape:hover,.tape:focus-visible{transform:translateY(-8px)}
+.tape .lab{flex:1;width:100%;background:linear-gradient(90deg,rgba(0,0,0,.18),rgba(255,255,255,.12) 30%,rgba(255,255,255,0) 60%,rgba(0,0,0,.15)),var(--g);border-top:10px solid #f1ece2;border-radius:1px;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:4px 0}
+.tape.box .lab{background:var(--g);border-top-color:rgba(0,0,0,.25)}
+.tape .tt{writing-mode:vertical-rl;transform:rotate(180deg);font-family:var(--display);font-size:13px;line-height:1.05;color:#f7efe1;text-shadow:0 1px 1px rgba(0,0,0,.35);max-height:100%;text-align:center}
+.tape.box .tt{color:#fff}
+.tape .ty{font-size:8px;letter-spacing:.14em;font-weight:700;color:#9b968e}
+.tape.box .ty{color:#4a443c}
+.tape .badge{top:auto;bottom:22px}
+.poster{border:0;padding:0;width:100%;aspect-ratio:2/3;border-radius:6px;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;text-align:left;color:#fff;
+  background:radial-gradient(90% 60% at 30% 25%,color-mix(in srgb,var(--c,#5b5650) 60%,#fff 25%),transparent 70%),linear-gradient(170deg,var(--c,#5b5650),color-mix(in srgb,var(--c,#5b5650) 45%,#050304));box-shadow:0 10px 24px rgba(0,0,0,.45)}
+.poster img{width:100%;height:100%;object-fit:cover}
+.poster .pz-top,.poster .pz-bot{font-size:10px;letter-spacing:.16em;font-weight:700;padding:12px;opacity:.85}
+.poster .pz-title{font-family:var(--display);font-size:22px;line-height:1.05;padding:0 12px;text-wrap:balance}
+.poster.big{width:210px}
+.poster.big .pz-title{font-size:28px}
+.posters{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+.pcard{--c:#5b5650;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;grid-template-columns:96px 1fr;gap:14px}
+.pcard h3{font-family:var(--display);font-weight:400;font-size:19px;margin:0;text-wrap:balance}
+.pcard .rev{font-size:14px;color:#e6dccd;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;margin:8px 0 10px}
+.pcard .poster .pz-title{font-size:14px;padding:0 8px}.pcard .poster .pz-top,.pcard .poster .pz-bot{font-size:8px;padding:8px}
+
+/* records */
+.wall{--h:150px;display:flex;flex-wrap:wrap;align-items:flex-end;gap:30px 52px;padding:18px 70px 30px 18px;border-radius:10px;
+  background:repeating-linear-gradient(180deg,transparent 0 var(--h),var(--wood) var(--h) calc(var(--h) + 6px),var(--wood-dark) calc(var(--h) + 6px) calc(var(--h) + 13px),transparent calc(var(--h) + 13px) calc(var(--h) + 30px)) 0 18px / 100% calc(100% - 18px) no-repeat,
+  radial-gradient(100% 80% at 50% 0%,color-mix(in srgb,var(--c) 22%,#241c16),#18130f)}
+.lp{--g:#66605a;position:relative;width:var(--h);height:var(--h);flex:none;border:0;padding:0;background:none}
+.disc{position:absolute;top:4%;left:30%;width:92%;height:92%;border-radius:50%;z-index:1;transition:left .35s cubic-bezier(.2,.8,.3,1);
+  background:conic-gradient(from 30deg,transparent 0 10%,rgba(255,255,255,.10) 14%,transparent 20% 55%,rgba(255,255,255,.07) 60%,transparent 66%),repeating-radial-gradient(circle,#121212 0 2px,#1f1f1f 2px 3px);box-shadow:0 4px 10px rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,255,255,.12)}
+.disc .lbl{position:absolute;inset:32%;border-radius:50%;background:var(--g) center/cover;box-shadow:0 0 0 2px rgba(0,0,0,.4)}
+.disc .lbl::after{content:"";position:absolute;inset:44%;border-radius:50%;background:#0c0c0c}
+.sleeve{position:absolute;inset:0;z-index:2;border-radius:2px;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;padding:10px;text-align:left;color:#fff;
+  background:radial-gradient(70% 70% at 75% 30%,color-mix(in srgb,var(--g) 55%,#fff 30%),transparent 60%),linear-gradient(160deg,var(--g),color-mix(in srgb,var(--g) 40%,#060404));box-shadow:0 8px 16px rgba(0,0,0,.55),inset 0 0 0 1px rgba(255,255,255,.08)}
+.sleeve.has{padding:0}
+.sleeve img{width:100%;height:100%;object-fit:cover}
+.sl-artist{font-size:10px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;opacity:.85}
+.sl-title{font-family:var(--display);font-size:17px;line-height:1.05;text-wrap:balance}
+.lp:hover .disc,.lp:focus-visible .disc{left:48%}
+.albums{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.acard{--g:#66605a;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;grid-template-columns:110px 1fr;gap:14px}
+.acard h3{font-family:var(--display);font-weight:400;font-size:19px;margin:0}
+.acard .rev{font-size:14px;color:#e6dccd;margin:6px 0 0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.sqcover{width:110px;aspect-ratio:1;border:0;padding:8px;border-radius:3px;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;text-align:left;color:#fff;
+  background:radial-gradient(70% 70% at 75% 30%,color-mix(in srgb,var(--g) 55%,#fff 30%),transparent 60%),linear-gradient(160deg,var(--g),color-mix(in srgb,var(--g) 40%,#060404));box-shadow:0 6px 14px rgba(0,0,0,.5)}
+.sqcover:has(img){padding:0}
+.sqcover img{width:100%;height:100%;object-fit:cover}
+.sqcover .sl-title{font-size:14px}
+.adetail{--g:#66605a;display:grid;grid-template-columns:300px minmax(0,1fr);gap:24px;align-items:start}
+.turntable{position:relative;width:300px;height:220px}
+.turntable .sleeve.big{width:200px;height:200px;inset:auto;top:10px;left:0}
+.turntable .sleeve.big .sl-title{font-size:24px}
+.turntable .disc{width:190px;height:190px;top:15px;left:100px}
+.disc.spin{animation:spin 2.2s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ph .pv.sq{width:100px;height:100px}
+
+/* picker stages */
+.stage.stage-vhs{--h:150px}
+.stage-vhs .tape{pointer-events:none;filter:brightness(.8)}
+.stage-vhs .tape.lit{filter:brightness(1.2);transform:translateY(-10px)}
+.stage-vhs .tape.pulled{filter:brightness(1.2);transform:translateY(-30px) rotate(-4deg);transition:transform .5s cubic-bezier(.2,.9,.3,1.2)}
+.stage-vhs .tape.dim{filter:brightness(.45)}
+.stage.stage-lp{--h:110px;gap:44px;padding-right:60px;align-items:center;padding-bottom:20px}
+.stage-lp .lp{pointer-events:none;filter:brightness(.8);transition:filter .12s ease,transform .12s ease}
+.stage-lp .lp.lit{filter:brightness(1.2);transform:translateY(-6px)}
+.stage-lp .lp.pulled{filter:brightness(1.15)}
+.stage-lp .lp.pulled .disc{left:62%;animation:spin 1.6s linear infinite}
+.stage-lp .lp.dim{filter:brightness(.45)}
+.pick .poster{width:140px}
+.pick .sqcover{width:140px}
+@media (max-width:640px){
+  .case.vhs{--h:170px}
+  .wall{--h:120px;gap:26px 40px;padding:14px 44px 26px 14px;background-position:0 14px,0 0;background-size:100% calc(100% - 14px),auto}
+  .adetail{grid-template-columns:1fr}
+  .turntable{margin:0 auto;width:280px}
+  .poster.big{width:170px;margin:0 auto}
+  .pick .poster,.pick .sqcover{margin:0 auto}
+}
+@media (prefers-reduced-motion:reduce){.disc.spin,.stage-lp .lp.pulled .disc{animation:none}.disc{transition:none}}
+
+/* bulk upload */
+.bulk{display:flex;flex-direction:column;gap:6px;max-height:46vh;overflow-y:auto;margin-top:8px;padding-right:4px}
+.brow{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:10px;align-items:center;background:var(--ink);border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+.brow .sel{width:100%;margin-top:4px;padding:6px 8px;font-size:14px}
+.bthumb{width:44px;height:56px;border-radius:3px;overflow:hidden;background:var(--raise)}
+.bthumb img{width:100%;height:100%;object-fit:cover}
+
+/* account, settings, toast */
+.auth{max-width:420px;margin:40px auto;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:26px}
+.auth h1,.settings h2{font-family:var(--display);font-weight:400}
+.auth h1{font-size:28px;margin:0 0 4px}
+.auth .grid{grid-template-columns:1fr;margin-top:18px}
+.settings{max-width:760px}
+.settings h2{font-size:22px;margin:26px 0 6px}
+.settings .grid{grid-template-columns:1fr;margin-top:12px}
+.btn.icon{padding:8px 10px;display:inline-flex;align-items:center;color:var(--muted)}
+a.btn{text-decoration:none;color:inherit;display:inline-flex;align-items:center}
+a.btn.primary{color:#22180c}
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);background:var(--text);color:var(--ink);padding:10px 16px;border-radius:999px;font-weight:600;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:80;max-width:calc(100% - 32px);text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+body[data-room="auth"] .actions .btn,body[data-room="auth"] .rooms{visibility:hidden}
+
+/* next-read picker */
+.picker-filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px 12px}
+.hat{font-size:14px;color:var(--muted);margin:12px 0 0;font-variant-numeric:tabular-nums}
+.stage{--h:170px;margin-top:14px;border-radius:10px;padding:22px 14px 0;min-height:200px;display:flex;align-items:flex-end;justify-content:center;gap:2px;overflow:hidden;
+  background:radial-gradient(120% 70% at 50% 0%,#3a2a1c,transparent 70%),#241a12;border:8px solid var(--wood-dark);border-bottom:0}
+.stage-ledge{height:14px;background:linear-gradient(180deg,var(--wood),var(--wood-dark));border-radius:0 0 6px 6px;margin-bottom:6px}
+.stage .spine{pointer-events:none;transition:transform .12s ease,filter .12s ease;filter:brightness(.75)}
+.stage .spine.lit{filter:brightness(1.15);transform:translateY(-10px)}
+.stage .spine.pulled{filter:brightness(1.2);transform:translateY(-34px) rotate(-4deg);transition:transform .5s cubic-bezier(.2,.9,.3,1.2)}
+.stage .spine.dim{filter:brightness(.45)}
+.stage-empty{align-self:center;margin:auto;color:var(--muted);font-size:14px;padding-bottom:24px;text-align:center}
+.pick{--c:#7a6a5a;display:grid;grid-template-columns:140px minmax(0,1fr);gap:18px;margin-top:16px;padding:16px;border-radius:12px;background:color-mix(in srgb,var(--c) 18%,var(--raise));border:1px solid color-mix(in srgb,var(--c) 50%,var(--line));animation:rise .45s ease both}
+.pick .cover{width:140px}
+.pick .cover .ct{font-size:17px}
+.pick h3{font-family:var(--display);font-weight:400;font-size:24px;margin:2px 0 0;text-wrap:balance}
+.pick .eyebrow{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:700}
+.pick .line{font-size:14px;color:var(--muted);margin:4px 0}
+.pick .syn{font-size:14px;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;margin:8px 0 0}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+@media (max-width:640px){
+  .picker-filters{grid-template-columns:1fr 1fr}
+  .stage{--h:130px;min-height:160px}
+  .pick{grid-template-columns:1fr}
+  .pick .cover{width:130px;margin:0 auto}
+  .lrow{grid-template-columns:14px minmax(0,1fr) auto}
+  .lrow .au,.lrow .stars{display:none}
+  .reviews{grid-template-columns:1fr}
+  .rcard{grid-template-columns:76px 1fr}
+  .thumb{width:76px;height:114px}
+  .niche{--h:180px;min-height:210px}
+  .case{--h:160px;padding:16px 10px 26px;border-width:6px}
+  .detail{grid-template-columns:1fr}
+  .cover{width:170px;margin:0 auto}
+  .grid,.photos,.post-wrap{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){.spine{transition:none}.spine:hover{transform:none}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-in">
+    <p class="brand">Geno's Library<small>Books · Movies &amp; Shows · Music</small></p>
+    <div class="actions">
+      <span class="sync" id="sync">Connecting…</span>
+      <button class="btn primary" id="addBook" type="button">+ Add book</button>
+      <a class="btn ghost icon" href="#settings" aria-label="Settings" title="Settings"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></a>
+    </div>
+    <nav class="rooms" aria-label="Rooms">
+      <button class="room" data-room="books" type="button">Books</button>
+      <button class="room" data-room="watch" type="button">Watch</button>
+      <button class="room" data-room="listen" type="button">Listen</button>
+    </nav>
+    <nav class="tabs" id="tabs" aria-label="Sections"></nav>
+  </div>
+</header>
+<main id="main"></main>
+<div id="modalRoot"></div>
+
+<script src="config.js"></script>
+<script src="vendor/supabase-2.116.0.js"></script>
+<script>
+(() => {
+"use strict";
+
+/* Genre colors from the Standalone Genres tab of "Books, Movies & Music Tracker" */
+const PALETTE = [
+  {name:"Young Adult", color:"#5E7E1E"},
+  {name:"Fiction", color:"#8B7907"},
+  {name:"MM Romance", color:"#9B1B2F"},
+  {name:"MM Sports Romance", color:"#14469F"},
+  {name:"MM College Romance", color:"#AF790E"},
+  {name:"MM Cowboy Romance", color:"#894910"},
+  {name:"MM Workplace Romance", color:"#00796B"},
+  {name:"MM Dark Romance", color:"#5E0A1A"},
+  {name:"MM Fantasy Romance", color:"#6B2C91"},
+  {name:"MM Holiday Romance", color:"#0A8047"}
+];
+const SHEET_ID = "1EMXaMuS2MEJMCFAkzwDazlnf9TjfQ0eJ_bkW1hjDtpc";
+const SHEET_TAB = "TBR List";
+const NEUTRAL = "#7A6A5A";
+const STATUS = {tbr:"TBR", reading:"Reading", read:"Read", dnf:"DNF"};
+const RULES = {genre:"Genre", trope:"Trope", burn:"Burn", ending:"Ending", status:"Status", manual:"Hand-picked"};
+const SHEET_FIELDS = ["title","author","pages","published","pov","seriesName","seriesCount","genre","tropes","ending","burn"];
+const PAGE = 240;
+
+let db=null, assets=null, downloads=null, mcp=null;
+let catalog=new Map(), userDocs=new Map(), shelves=[], meta=null;
+let catalogLoaded=false, userLoaded=false;
+let ALL=[], allDirty=true;
+const ui={hideEmpty:true, filter:"all", search:"", sort:"author", limit:PAGE, caseSearch:"", caseSort:"author", caseLimit:PAGE, listLimit:200};
+const synCache=new Map();
+const main=document.getElementById("main");
+const syncEl=document.getElementById("sync");
+
+/* ---------- helpers ---------- */
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const norm=s=>(" "+String(s||"").toLowerCase()+" ").replace(/\bya\b/g,"young adult").replace(/\s+/g," ").trim();
+const blob=id=>!id?"":/^https?:\/\//i.test(id)?id:photoURL(id);
+const clean=v=>{const s=String(v??"").trim();return (!s||s.toUpperCase()==="N/A"||s==="Unknown")?"":s;};
+const splitList=s=>String(s||"").split(/[,;\n]/).map(x=>x.trim()).filter(x=>x&&x.toUpperCase()!=="N/A");
+const slug=s=>String(s||"").toLowerCase().normalize("NFKD").replace(/[^\w\s-]/g,"").trim().replace(/[\s_]+/g,"-").replace(/-+/g,"-").slice(0,60)||"x";
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+function genreColor(genre){
+  const g=norm(genre); if(!g) return NEUTRAL;
+  const rank=p=>p.name.startsWith("MM")?100+p.name.length:p.name.length;
+  const hit=[...PALETTE].sort((a,b)=>rank(b)-rank(a)).find(p=>g.includes(norm(p.name))||(p.name==="MM Workplace Romance"&&g.includes("mm work romance")));
+  return hit?hit.color:NEUTRAL;
+}
+function matches(shelf,b){
+  const v=norm(shelf.value);
+  switch(shelf.type){
+    case "genre": return !!v && (norm(b.genre).includes(v) || (v==="mm workplace romance" && norm(b.genre).includes("mm work romance")));
+    case "trope": return (b.tropes||[]).some(t=>norm(t)===v);
+    case "burn": return norm(b.burn)===v;
+    case "ending": return norm(b.ending)===v;
+    case "status": return b.status===shelf.value;
+    case "manual": return (b.shelves||[]).includes(shelf.id);
+  }
+  return false;
+}
+const lastName=a=>{const p=String(a||"").split("&")[0].trim().split(/\s+/);return (p[p.length-1]||"").toLowerCase();};
+const SORTS={
+  author:(a,b)=>lastName(a.author).localeCompare(lastName(b.author))||String(a.title).localeCompare(String(b.title)),
+  title:(a,b)=>String(a.title).replace(/^the\s+/i,"").localeCompare(String(b.title).replace(/^the\s+/i,"")),
+  genre:(a,b)=>String(a.genre).localeCompare(String(b.genre))||SORTS.author(a,b),
+  sheet:(a,b)=>(a.row??1e9)-(b.row??1e9),
+  pages:(a,b)=>(Number(a.pages)||0)-(Number(b.pages)||0)
+};
+function fmtDate(d){ if(!d) return ""; const t=new Date(d+"T12:00:00"); return isNaN(t)?d:t.toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"}); }
+function starPts(cx,cy,R,r){const p=[];for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5;const rad=i%2?r:R;p.push([cx+Math.cos(a)*rad,cy+Math.sin(a)*rad]);}return p;}
+function starsSVG(v,size=18,on="#E8C77E",off="#4b3f33"){
+  const w=size*5+16, uid="s"+Math.random().toString(36).slice(2,8);
+  let paths="";
+  for(let i=0;i<5;i++){const cx=i*(size+4)+size/2;paths+=`<polygon points="${starPts(cx,size/2,size/2,size/4.6).map(p=>p.map(n=>n.toFixed(1)).join(",")).join(" ")}"/>`;}
+  const full=Math.floor(v), frac=v-full, fillW=full*(size+4)+frac*size;
+  return `<svg width="${w}" height="${size}" viewBox="0 0 ${w} ${size}" role="img" aria-label="${v} out of 5 stars"><g fill="${off}">${paths}</g><clipPath id="${uid}"><rect width="${fillW}" height="${size}"/></clipPath><g fill="${on}" clip-path="url(#${uid})">${paths}</g></svg>`;
+}
+
+/* ---------- data model ----------
+   catalog/<chunk>   books imported from the sheet (compact keys)
+   synopses/<chunk>  their synopses, read when a book is opened
+   books/<id>        everything Geno adds in the app: status, rating, review, photos, edits, and books not in the sheet */
+function expand(id,c){
+  return {id,fromSheet:true,row:c.row,chunk:c.k,title:c.t||"",author:c.a||"",pages:c.p||null,published:c.d||"",pov:c.v||"",
+    seriesName:c.n||"",seriesCount:c.s||"",genre:c.g||"",tropes:c.tr||[],ending:c.e||"",burn:c.b||"",status:c.r?"read":"tbr",sheetRead:!!c.r,coverId:c.cv||undefined};
+}
+function rebuild(){
+  const out=new Map();
+  for(const [id,c] of catalog) out.set(id,expand(id,c));
+  for(const [id,u] of userDocs){ const base=out.get(id)||{id,fromSheet:false,tropes:[]}; out.set(id,{...base,...u,id}); }
+  ALL=[...out.values()].filter(b=>!b.hidden && b.title).map(b=>applyAuto("book",b));
+  allDirty=false;
+}
+function books(){ if(allDirty) rebuild(); return ALL; }
+function getBook(id){ return books().find(b=>b.id===id); }
+
+function setSync(t){syncEl.textContent=t;}
+async function withRetry(fn){
+  for(let i=0;;i++){ try{ return await fn(); }catch(e){ if(i<3&&e&&(e.code==="resource_exhausted"||e.code==="unavailable")){ await sleep(1200*(i+1)+Math.random()*400); continue; } throw e; } }
+}
+
+/* Save the app-side layer for a book: only fields that differ from the sheet, plus personal fields */
+async function saveUser(id,full,isSheet){
+  if(!db) throw new Error("Saving isn't available in this view.");
+  const base=isSheet&&catalog.has(id)?expand(id,catalog.get(id)):null;
+  if(full.coverId&&full.coverId===autoCovers.get("book:"+id)) delete full.coverId;
+  if(base&&full.coverId&&full.coverId===base.coverId) delete full.coverId;
+  const out={};
+  for(const [k,v] of Object.entries(full)){
+    if(v===undefined) continue;
+    if(base&&SHEET_FIELDS.includes(k)&&JSON.stringify(base[k]??"")===JSON.stringify(v??"")) continue;
+    if(base&&k==="status"&&base.status===v&&!(userDocs.get(id)||{}).status) continue;
+    out[k]=v;
+  }
+  await withRetry(()=>db.collection("books").doc(id).set(out));
+}
+async function patchUser(id,fields){
+  const cur={...(userDocs.get(id)||{})}; Object.assign(cur,fields);
+  await withRetry(()=>db.collection("books").doc(id).set(cur));
+}
+
+/* ---------- routing ---------- */
+function view(){const h=location.hash.slice(1); if(h.startsWith("case-")) return "case"; return ["tbr","shelves","read","books","watch","watched","listen","listened","settings"].includes(h)?h:"tbr";}
+const ROOM_TABS={books:[["tbr","Main Shelf"],["shelves","Shelves"],["read","Read & Reviewed"],["books","All Books"]],watch:[["watch","VHS Shelf"],["watched","Watched & Reviewed"]],listen:[["listen","Record Wall"],["listened","Listened & Rated"]]};
+const roomOf=v=>["watch","watched"].includes(v)?"watch":["listen","listened"].includes(v)?"listen":"books";
+const lastView={books:"tbr",watch:"watch",listen:"listen"};
+document.querySelectorAll(".room").forEach(r=>r.addEventListener("click",()=>{location.hash=lastView[r.dataset.room];}));
+document.getElementById("tabs").addEventListener("click",e=>{const t=e.target.closest(".tab"); if(t) location.hash=t.dataset.view;});
+window.addEventListener("hashchange",()=>{ui.caseLimit=PAGE;ui.caseSearch="";render();window.scrollTo(0,0);});
+document.getElementById("addBook").addEventListener("click",()=>{const r=roomOf(view()); if(r==="watch") openWatchEdit(null); else if(r==="listen") openAlbumEdit(null); else openEdit(null);});
+
+function render(){
+  if(!UID){ if(document.body.dataset.room!=="auth") main.innerHTML=`<p class="hidden-note">Opening your library…</p>`; return; }
+  const v=view(), room=roomOf(v); if(v!=="settings") lastView[room]=v;
+  document.querySelectorAll(".room").forEach(r=>r.setAttribute("aria-current",r.dataset.room===room?"page":"false"));
+  document.getElementById("tabs").innerHTML=ROOM_TABS[room].map(([k,l])=>`<button class="tab" type="button" data-view="${k}" aria-current="${(k===v||(v==="case"&&k==="shelves"))?"page":"false"}">${esc(l)}</button>`).join("");
+  document.getElementById("addBook").textContent={books:"+ Add book",watch:"+ Add title",listen:"+ Add album"}[room];
+  document.body.dataset.room=room;
+  if(v==="settings"){ main.innerHTML=renderSettings(); wire(); wireSettings(); return; }
+  let html="";
+  if(!db && catalogLoaded) html+=`<div class="banner">This view can't save to your library. Open the app from its claude.ai link while signed in, and changes will sync between your computer and phone.</div>`;
+  if(!catalogLoaded||!userLoaded){ main.innerHTML=html+`<p class="hidden-note">Opening your library…</p>`; return; }
+  if(room==="watch"){
+    if(db&&wLoaded&&!wcat.size) html+=`<div class="banner"><span>${(SETTINGS.sheets||{}).tbw?"Your watch list couldn't be read. Check its link in Settings.":"Add your TBW List link in Settings to fill the VHS shelf."}</span><a class="btn primary small" href="#settings">Open Settings</a></div>`;
+    html+= v==="watched"?renderWatched():renderWatchShelf();
+  }else if(room==="listen"){
+    if(db&&lLoaded&&!lcat.size) html+=`<div class="banner"><span>${(SETTINGS.sheets||{}).albums?"Your albums couldn't be read. Check the link in Settings.":"Add your Albums to Listen To link in Settings to fill the record wall."}</span><a class="btn primary small" href="#settings">Open Settings</a></div>`;
+    html+= v==="listened"?renderListened():renderRecordWall();
+  }else{
+  if(db && !catalog.size) html+=`<div class="banner"><span>${(SETTINGS.sheets||{}).tbr?"Your TBR List couldn't be read. Check its link in Settings.":"Add your TBR List link in Settings to fill the Main Shelf."}</span><a class="btn primary small" href="#settings">Open Settings</a></div>`;
+  html+= v==="tbr"?renderMain() : v==="shelves"?renderShelves() : v==="case"?renderCase() : v==="read"?renderRead() : renderBooks();
+  }
+  main.innerHTML=html;
+  wire();
+}
+
+/* ---------- spines ---------- */
+function spineHTML(b){
+  const pages=Number(b.pages)||320;
+  const badge=b.status==="reading"?`<span class="badge" title="Currently reading"></span>`:"";
+  const label=`${esc(b.title)}${b.author?" by "+esc(b.author):""}`;
+  if(b.spineId){
+    const ratio=Number(b.spineRatio)||0.14;
+    return `<button class="spine" type="button" data-open="${esc(b.id)}" style="width:calc(var(--h) * ${ratio.toFixed(4)});min-width:12px;max-width:90px" aria-label="${label}" title="${label}"><img src="${blob(b.spineId)}" alt="" loading="lazy">${badge}</button>`;
+  }
+  const w=Math.max(24,Math.min(54,Math.round(pages/9)));
+  let h=0; for(const ch of String(b.id)) h=(h*31+ch.charCodeAt(0))>>>0;
+  const shadeMix=[0,8,16,-8,-14][h%5], sg=shadeMix>0?`color-mix(in srgb,${genreColor(b.genre)} ${100-shadeMix}%,#fff)`:shadeMix<0?`color-mix(in srgb,${genreColor(b.genre)} ${100+shadeMix}%,#000)`:genreColor(b.genre);
+  return `<button class="spine blank b${(h>>3)%4}" type="button" data-open="${esc(b.id)}" style="width:${w}px;--g:${genreColor(b.genre)};--sg:${sg}" aria-label="${label}" title="${label}"><span class="t">${esc(b.title)}</span><span class="a">${esc(lastName(b.author))}</span>${badge}</button>`;
+}
+function filterSearch(list,q){ q=norm(q); return q?list.filter(b=>norm(b.title+" "+b.author+" "+b.genre+" "+(b.tropes||[]).join(" ")+" "+b.seriesName).includes(q)):list; }
+function sortSelect(id,val){ return `<select class="sel" id="${id}" aria-label="Sort books">${[["author","Author"],["title","Title"],["genre","Genre"],["sheet","Sheet order"],["pages","Page count"]].map(([k,l])=>`<option value="${k}" ${val===k?"selected":""}>Sort: ${l}</option>`).join("")}</select>`; }
+
+/* ---------- main shelf ---------- */
+function renderMain(){
+  const tbr=books().filter(b=>b.status==="tbr");
+  const list=filterSearch(tbr,ui.search).sort(SORTS[ui.sort]);
+  const shown=list.slice(0,ui.limit);
+    let out=`<div class="view-head"><div><h1>Main Shelf</h1><p class="sub">${tbr.length.toLocaleString()} books on your TBR${meta&&meta.syncedAt?` · synced from your sheet ${esc(fmtDate(meta.syncedAt.slice(0,10)))}`:""}</p></div>
+    <div class="toolbar"><input class="search" id="q-main" type="search" placeholder="Search your TBR" value="${esc(ui.search)}" aria-label="Search your TBR">${sortSelect("s-main",ui.sort)}<button class="btn" type="button" data-import>Refresh from sheet</button><button class="btn" type="button" data-bulk="books">Add photos in bulk</button>${tbr.length?`<button class="btn primary" type="button" data-pick="">Pick my next read</button>`:""}</div></div>`;
+  if(!tbr.length) return out+`<div class="empty"><h2>Your Main Shelf is empty</h2><p>Sync your TBR sheet to stand every book up here, or add one by hand.</p></div>`;
+  if(!list.length) return out+`<div class="empty"><h2>No matches</h2><p>Nothing on your TBR matches that search.</p></div>`;
+  out+=`<div class="case">${shown.map(spineHTML).join("")}</div>`;
+  if(list.length>shown.length) out+=`<div class="more">Showing ${shown.length.toLocaleString()} of ${list.length.toLocaleString()}<button class="btn" type="button" id="more-main">Show ${Math.min(PAGE,list.length-shown.length)} more</button></div>`;
+  return out;
+}
+
+/* ---------- genre / trope shelves ---------- */
+function ruleText(s){ return s.type==="manual"?"Hand-picked":`${RULES[s.type]||""} · ${esc(s.type==="status"?STATUS[s.value]:s.value)}`; }
+function renderShelves(){
+  const all=books();
+  const list=[...shelves].sort((a,b)=>(a.order??99)-(b.order??99)||String(a.name).localeCompare(b.name));
+  let hidden=0, out="";
+  for(const s of list){
+    const inShelf=all.filter(b=>matches(s,b)).sort(SORTS.author);
+    if(ui.hideEmpty && !inShelf.length){hidden++;continue;}
+    const prev=inShelf.slice(0,40);
+    out+=`<section class="shelf" style="--c:${esc(s.color||NEUTRAL)}">
+      <div class="shelf-head"><h2 class="plaque">${esc(s.name)}</h2><span class="rule">${ruleText(s)}</span><span class="count">${inShelf.length.toLocaleString()} ${inShelf.length===1?"book":"books"}</span>
+      <span class="right">${inShelf.length?`<a class="btn ghost small" href="#case-${esc(s.id)}">Open shelf</a>`:""}<button class="btn ghost small" type="button" data-editshelf="${esc(s.id)}">Edit</button></span></div>
+      <div class="niche">${inShelf.length?prev.map(spineHTML).join("")+(inShelf.length>prev.length?`<a class="seeall" href="#case-${esc(s.id)}">See all ${inShelf.length.toLocaleString()}</a>`:""):`<p class="empty-shelf">No books match this shelf yet.</p>`}</div>
+      <div class="ledge"></div></section>`;
+  }
+  const head=`<div class="view-head"><h1>Shelves</h1><div class="toolbar"><label class="toggle"><input type="checkbox" id="hideEmpty" ${ui.hideEmpty?"checked":""}> Hide empty shelves</label><button class="btn" type="button" id="newShelf">+ New shelf</button></div></div>`;
+  if(!shelves.length) return head+`<div class="empty"><h2>No shelves yet</h2><p>Make a shelf for a genre, a trope, burn pace or ending, or hand-pick the books on it.</p></div>`;
+  return head+out+(hidden?`<p class="hidden-note">${hidden} empty ${hidden===1?"shelf is":"shelves are"} hidden. <button class="linkish" type="button" id="showEmpty">Show them</button></p>`:"");
+}
+function renderCase(){
+  const id=location.hash.slice(6); const s=shelves.find(x=>x.id===id);
+  if(!s) return `<div class="empty"><h2>That shelf isn't here</h2><p><a class="linkish" href="#shelves">Back to all shelves</a></p></div>`;
+  const inShelf=books().filter(b=>matches(s,b));
+  const list=filterSearch(inShelf,ui.caseSearch).sort(SORTS[ui.caseSort]); const shown=list.slice(0,ui.caseLimit);
+  let out=`<div class="view-head"><div><p class="sub"><a class="linkish" href="#shelves">All shelves</a></p><h1>${esc(s.name)}</h1><p class="sub">${ruleText(s)} · ${inShelf.length.toLocaleString()} books</p></div>
+    <div class="toolbar"><input class="search" id="q-case" type="search" placeholder="Search this shelf" value="${esc(ui.caseSearch)}" aria-label="Search this shelf">${sortSelect("s-case",ui.caseSort)}<button class="btn" type="button" data-editshelf="${esc(s.id)}">Edit shelf</button><button class="btn primary" type="button" data-pick="${esc(s.id)}">Pick from this shelf</button></div></div>`;
+  if(!list.length) return out+`<div class="empty"><h2>No matches</h2></div>`;
+  out+=`<div class="case tinted" style="--c:${esc(s.color||NEUTRAL)}">${shown.map(spineHTML).join("")}</div>`;
+  if(list.length>shown.length) out+=`<div class="more">Showing ${shown.length.toLocaleString()} of ${list.length.toLocaleString()}<button class="btn" type="button" id="more-case">Show more</button></div>`;
+  return out;
+}
+
+/* ---------- read ---------- */
+function renderRead(){
+  const read=books().filter(b=>b.status==="read").sort((a,b)=>String(b.finished||"").localeCompare(String(a.finished||""))||SORTS.author(a,b));
+  queueCovers("book",read.slice(0,ui.listLimit));
+  const yr=String(new Date().getFullYear());
+  const thisYear=read.filter(b=>String(b.finished||"").startsWith(yr));
+  const rated=read.filter(b=>Number(b.rating)>0);
+  const avg=rated.length?rated.reduce((s,b)=>s+Number(b.rating),0)/rated.length:0;
+  const pages=thisYear.reduce((s,b)=>s+(Number(b.pages)||0),0);
+  let out=`<div class="view-head"><h1>Read &amp; Reviewed</h1></div>
+  <div class="stats">
+    <div class="stat"><b>${thisYear.length}</b><span>books finished in ${yr}</span></div>
+    <div class="stat"><b>${pages.toLocaleString()}</b><span>pages read in ${yr}</span></div>
+    <div class="stat"><b>${avg?avg.toFixed(2):"–"}</b><span>average rating</span></div>
+    <div class="stat"><b>${read.length.toLocaleString()}</b><span>books read in all</span></div>
+  </div>`;
+  if(!read.length) return out+`<div class="empty"><h2>Nothing marked read yet</h2><p>Open any book and mark it Read, then add your rating and review. It shows up here, ready to turn into a Bookstagram post.</p></div>`;
+  out+=`<div class="reviews">`+read.slice(0,ui.listLimit).map(b=>{
+    const c=genreColor(b.genre);
+    const img=b.coverId?`<img src="${blob(b.coverId)}" alt="">`:esc(b.title);
+    return `<article class="rcard" style="--c:${c}"><button class="thumb" type="button" data-open="${esc(b.id)}" aria-label="Open ${esc(b.title)}">${img}</button><div>
+      <h3>${esc(b.title)}</h3><p class="by">${esc(b.author)}</p>
+      ${Number(b.rating)>0?starsSVG(Number(b.rating)):`<span class="meta">Not rated yet</span>`}
+      <p class="rev">${b.review?esc(b.review):"<span class='meta'>No review yet.</span>"}</p>
+      <p class="meta">${b.finished?"Finished "+esc(fmtDate(b.finished)):""}${b.genre?(b.finished?" · ":"")+esc(b.genre):""}</p>
+      <div class="row" style="margin-top:10px"><button class="btn small primary" type="button" data-post="${esc(b.id)}">Bookstagram post</button><button class="btn small" type="button" data-edit="${esc(b.id)}">${b.review?"Edit review":"Rate &amp; review"}</button></div>
+    </div></article>`;
+  }).join("")+`</div>`;
+  if(read.length>ui.listLimit) out+=`<div class="more"><button class="btn" type="button" id="more-list">Show more</button></div>`;
+  return out;
+}
+
+/* ---------- all books ---------- */
+function renderBooks(){
+  const all=books();
+  const list=filterSearch(all.filter(b=>ui.filter==="all"||b.status===ui.filter),ui.search).sort(SORTS.author);
+  const chips=["all","tbr","reading","read","dnf"].map(k=>`<button class="chip" type="button" data-filter="${k}" aria-pressed="${ui.filter===k}">${k==="all"?"All":STATUS[k]} <span class="count">${(k==="all"?all.length:all.filter(b=>b.status===k).length).toLocaleString()}</span></button>`).join("");
+  let out=`<div class="view-head"><h1>All books</h1></div><div class="toolbar"><input class="search" id="q-books" type="search" placeholder="Search title, author, genre, trope or series" value="${esc(ui.search)}" aria-label="Search books">${chips}</div>`;
+  if(!list.length) return out+`<div class="empty"><h2>No books here</h2><p>${all.length?"Nothing matches that search.":"Sync your sheet or add a book with + Add book."}</p></div>`;
+  out+=`<div class="list">`+list.slice(0,ui.listLimit).map(b=>`<button class="lrow" type="button" data-open="${esc(b.id)}"><span class="dot" style="background:${genreColor(b.genre)}"></span><span style="min-width:0"><span class="ti">${esc(b.title)}</span><span class="au" style="display:block">${esc(b.genre||"")}</span></span><span class="au">${esc(b.author)}</span><span class="stars">${Number(b.rating)>0?starsSVG(Number(b.rating),13):""}</span><span class="pill ${esc(b.status)}">${STATUS[b.status]||"TBR"}</span></button>`).join("")+`</div>`;
+  if(list.length>ui.listLimit) out+=`<div class="more">Showing ${ui.listLimit} of ${list.length.toLocaleString()}<button class="btn" type="button" id="more-list">Show more</button></div>`;
+  return out;
+}
+
+function wire(){
+  const on=(sel,fn)=>main.querySelectorAll(sel).forEach(el=>el.addEventListener("click",()=>fn(el)));
+  on("[data-open]",el=>openDetail(el.dataset.open));
+  on("[data-edit]",el=>openEdit(getBook(el.dataset.edit)));
+  on("[data-editshelf]",el=>openShelf(shelves.find(s=>s.id===el.dataset.editshelf)));
+  on("[data-post]",el=>openPost(getBook(el.dataset.post)));
+  on("[data-filter]",el=>{ui.filter=el.dataset.filter;ui.listLimit=200;render();});
+  on("[data-import]",()=>refreshSheets());
+  on("[data-pick]",el=>openPicker(el.dataset.pick||""));
+  on("[data-wopen]",el=>openWatchDetail(el.dataset.wopen));
+  on("[data-wedit]",el=>openWatchEdit(getWatch(el.dataset.wedit)));
+  on("[data-lopen]",el=>openAlbumDetail(el.dataset.lopen));
+  on("[data-ledit]",el=>openAlbumEdit(getAlbum(el.dataset.ledit)));
+  on("[data-wimport]",()=>refreshSheets());
+  on("[data-limport]",()=>refreshSheets());
+  on("[data-wpick]",()=>openRoomPicker("watch"));
+  on("[data-bulk]",el=>openBulk(el.dataset.bulk));
+  on("[data-lpick]",()=>openRoomPicker("listen"));
+  on("[data-wtype]",el=>{wui.type=el.dataset.wtype;wui.limit=PAGE;render();});
+  on("[data-wfocus]",el=>{ if(wui.group==="genre") wui.genre=el.dataset.wfocus; else if(wui.group==="type") wui.type=el.dataset.wfocus==="Shows"?"show":"movie"; else if(wui.group==="where") wui.where=el.dataset.wfocus==="Service not set"?"":el.dataset.wfocus; wui.group="none"; render(); });
+  on("[data-lgroup]",el=>{lui.open.add(el.dataset.lgroup);render();});
+  const g=id=>document.getElementById(id);
+  if(g("hideEmpty")) g("hideEmpty").addEventListener("change",e=>{ui.hideEmpty=e.target.checked;render();});
+  if(g("showEmpty")) g("showEmpty").addEventListener("click",()=>{ui.hideEmpty=false;render();});
+  if(g("newShelf")) g("newShelf").addEventListener("click",()=>openShelf(null));
+  if(g("more-main")) g("more-main").addEventListener("click",()=>{ui.limit+=PAGE;render();});
+  if(g("more-case")) g("more-case").addEventListener("click",()=>{ui.caseLimit+=PAGE;render();});
+  if(g("more-list")) g("more-list").addEventListener("click",()=>{ui.listLimit+=200;render();});
+  if(g("s-main")) g("s-main").addEventListener("change",e=>{ui.sort=e.target.value;render();});
+  if(g("s-case")) g("s-case").addEventListener("change",e=>{ui.caseSort=e.target.value;render();});
+  [["w-genre","genre"],["w-where","where"],["w-group","group"],["w-sort","sort"]].forEach(([id,k])=>{ if(g(id)) g(id).addEventListener("change",e=>{wui[k]=e.target.value;wui.limit=PAGE;render();}); });
+  [["l-genre","genre"],["l-sort","sort"]].forEach(([id,k])=>{ if(g(id)) g(id).addEventListener("change",e=>{lui[k]=e.target.value;render();}); });
+  if(g("more-watch")) g("more-watch").addEventListener("click",()=>{wui.limit+=PAGE;render();});
+  const live=(id,key,reset)=>{ const el=g(id); if(!el) return; let t; el.addEventListener("input",()=>{ clearTimeout(t); t=setTimeout(()=>{ ui[key]=el.value; ui[reset]=reset==="listLimit"?200:PAGE; const pos=el.selectionStart; render(); const n=g(id); n.focus(); try{n.setSelectionRange(pos,pos);}catch(_){} },180); }); };
+  live("q-main","search","limit"); live("q-books","search","listLimit"); live("q-case","caseSearch","caseLimit");
+  const live2=(id,obj,key)=>{ const el=g(id); if(!el) return; let t; el.addEventListener("input",()=>{ clearTimeout(t); t=setTimeout(()=>{ obj[key]=el.value; const pos=el.selectionStart; render(); const n=g(id); n.focus(); try{n.setSelectionRange(pos,pos);}catch(_){} },180); }); };
+  live2("q-watch",wui,"search"); live2("q-listen",lui,"search");
+}
+
+/* ---------- modal plumbing ---------- */
+const root=document.getElementById("modalRoot");
+let lastFocus=null;
+function modal(html){
+  lastFocus=document.activeElement;
+  root.innerHTML=`<div class="overlay" id="ov"><div class="modal" role="dialog" aria-modal="true">${html}</div></div>`;
+  const ov=document.getElementById("ov");
+  ov.addEventListener("click",e=>{if(e.target===ov)close();});
+  document.addEventListener("keydown",escKey);
+  const first=ov.querySelector("[data-autofocus]")||ov.querySelector("input,select,textarea,button"); if(first) first.focus();
+  return ov;
+}
+function escKey(e){if(e.key==="Escape")close();}
+function close(){root.innerHTML="";document.removeEventListener("keydown",escKey);if(lastFocus&&document.contains(lastFocus))lastFocus.focus();}
+
+/* ---------- book detail ---------- */
+async function synopsisFor(b){ return b.synopsis||synMap.get(b.id)||""; }
+function openDetail(id){
+  const b=getBook(id); if(!b) return;
+  const c=genreColor(b.genre);
+  const fact=(label,val,wide)=>`<div${wide?' class="wide"':""}><dt>${label}</dt><dd>${val?val:'<span class="meta">—</span>'}</dd></div>`;
+  const cover=b.coverId?`<img src="${blob(b.coverId)}" alt="Cover of ${esc(b.title)}">`:`<span class="ct">${esc(b.title)}</span><span class="ca">${esc(b.author)}</span>`;
+  const ov=modal(`<div class="detail" style="--c:${c}">
+    <div><div class="cover">${cover}</div>${b.coverId?"":`<p class="cover-note">No cover photo yet. Add one with Edit.</p>`}</div>
+    <div>
+      <h2>${esc(b.title)}</h2><p class="by">${esc(b.author)}</p>
+      <div class="row" style="align-items:center"><span class="pill ${esc(b.status)}">${STATUS[b.status]||"TBR"}</span>${Number(b.rating)>0?starsSVG(Number(b.rating),16):""}</div>
+      <dl class="facts">
+        ${fact("Page count",b.pages?Number(b.pages).toLocaleString():"")}
+        ${fact("Publication date",esc(b.published))}
+        ${fact("POV",esc(b.pov))}
+        ${fact("Genre",b.genre?`<span style="display:inline-flex;align-items:center;gap:6px"><span class="dot" style="background:${c}"></span>${esc(b.genre)}</span>`:"")}
+        ${fact("Series",esc(b.seriesName)||(b.fromSheet?"Standalone":""))}
+        ${fact("Books in series",esc(b.seriesCount))}
+        ${fact("HEA / HFN",esc(b.ending))}
+        ${fact("Burn pace",esc(b.burn))}
+        ${fact("Tropes",(b.tropes||[]).length?`<span class="tchips">${b.tropes.map(t=>`<span class="tchip">${esc(t)}</span>`).join("")}</span>`:"",true)}
+      </dl>
+      <p class="syn-h">Synopsis</p><p class="syn" id="syn"><span class="meta">Loading…</span></p>
+    </div></div>
+    <div class="foot"><span class="err" id="err"></span>
+      <button class="btn ghost left" type="button" id="close">Close</button>
+      ${b.status!=="reading"&&b.status!=="read"?`<button class="btn" type="button" id="reading">Start reading</button>`:""}
+      ${b.status!=="read"?`<button class="btn" type="button" id="markread">Mark as read</button>`:`<button class="btn" type="button" id="post">Bookstagram post</button>`}
+      <button class="btn primary" type="button" id="edit" data-autofocus>${b.status==="read"?"Edit, rate & review":"Edit & add photos"}</button></div>`);
+  synopsisFor(b).then(t=>{ const el=ov.querySelector("#syn"); if(el) el.innerHTML=t?esc(t):'<span class="meta">No synopsis in your sheet for this one.</span>'; });
+  if(!b.coverId) findCover("book",b).then(url=>{ if(!url) return; const el=ov.querySelector(".cover"); if(el) el.innerHTML=`<img src="${esc(url)}" alt="Cover of ${esc(b.title)}">`; const n=ov.querySelector(".cover-note"); if(n) n.textContent="Found automatically. Wrong cover? Paste a link in your sheet's Cover URL column, or upload a photo with Edit."; });
+  ov.querySelector("#close").addEventListener("click",close);
+  ov.querySelector("#edit").addEventListener("click",()=>openEdit(getBook(id)));
+  const p=ov.querySelector("#post"); if(p) p.addEventListener("click",()=>openPost(getBook(id)));
+  const quick=async(fields,then)=>{ try{ await patchUser(id,fields); then&&then(); }catch(e){ ov.querySelector("#err").textContent="Couldn't save. Check your connection and try again."; } };
+  const rd=ov.querySelector("#reading"); if(rd) rd.addEventListener("click",()=>quick({status:"reading",started:b.started||new Date().toISOString().slice(0,10)},()=>openDetail(id)));
+  const mr=ov.querySelector("#markread"); if(mr) mr.addEventListener("click",()=>quick({status:"read",finished:b.finished||new Date().toISOString().slice(0,10)},()=>openEdit(getBook(id))));
+}
+
+/* ---------- image prep ---------- */
+async function prepImage(file,rotate,max=1600){
+  const bmp=await createImageBitmap(file);
+  let w=bmp.width,h=bmp.height; const s=Math.min(1,max/Math.max(w,h)); w=Math.round(w*s); h=Math.round(h*s);
+  const c=document.createElement("canvas"); const r=((rotate%360)+360)%360;
+  if(r===90||r===270){c.width=h;c.height=w;}else{c.width=w;c.height=h;}
+  const x=c.getContext("2d"); x.translate(c.width/2,c.height/2); x.rotate(r*Math.PI/180); x.drawImage(bmp,-w/2,-h/2,w,h);
+  const out=await new Promise(res=>c.toBlob(res,"image/jpeg",0.88));
+  return {blob:out, ratio:c.width/c.height, preview:c.toDataURL("image/jpeg",0.6)};
+}
+
+/* ---------- book editor ---------- */
+async function openEdit(b){
+  const isNew=!b; b=b?{...b}:{status:"tbr",tropes:[],shelves:[]};
+  const all=books();
+  const genres=[...new Set([...PALETTE.map(p=>p.name),...all.map(x=>x.genre).filter(Boolean)])].slice(0,200);
+  const tropes=[...new Set(all.flatMap(x=>x.tropes||[]))].sort().slice(0,400);
+  const manual=shelves.filter(s=>s.type==="manual");
+  const syn=isNew?"":await synopsisFor(b);
+  let rating=Number(b.rating)||0;
+  const pending={spine:null,spineRot:0,cover:null};
+  const opt=(arr,cur)=>arr.map(o=>`<option ${cur===o?"selected":""} value="${o}">${o||"—"}</option>`).join("");
+  const ov=modal(`<h2>${isNew?"Add a book":"Edit "+esc(b.title)}</h2>
+  ${b.fromSheet?`<p class="hint" style="margin:-8px 0 14px">From your TBR sheet. Changes here stay in the app and win over the sheet on future syncs.</p>`:""}
+  <form class="grid" novalidate onsubmit="return false">
+    <label class="f full">Title<input id="f-title" value="${esc(b.title)}"></label>
+    <label class="f">Author<input id="f-author" value="${esc(b.author)}"></label>
+    <label class="f">Status<select id="f-status">${Object.entries(STATUS).map(([k,v])=>`<option value="${k}" ${b.status===k?"selected":""}>${v}</option>`).join("")}</select></label>
+    <label class="f">Page count<input id="f-pages" inputmode="numeric" value="${esc(b.pages)}"></label>
+    <label class="f">Publication date<input id="f-published" value="${esc(b.published)}" placeholder="April 13, 2024"></label>
+    <label class="f">POV<input id="f-pov" value="${esc(b.pov)}" placeholder="Dual Perspective"></label>
+    <label class="f">Genre<input id="f-genre" list="dl-genre" value="${esc(b.genre)}"></label>
+    <label class="f">Series name<input id="f-seriesName" value="${esc(b.seriesName)}" placeholder="Leave blank if standalone"></label>
+    <label class="f">Books in series<input id="f-seriesCount" inputmode="numeric" value="${esc(b.seriesCount)}"></label>
+    <label class="f full">Tropes<input id="f-tropes" list="dl-trope" value="${esc((b.tropes||[]).join(", "))}"><span class="hint">Separate with commas, like Grumpy/Sunshine, Found Family</span></label>
+    <label class="f">HEA / HFN<select id="f-ending">${opt(["","HEA","HFN"],b.ending)}</select></label>
+    <label class="f">Burn pace<select id="f-burn">${opt(["","Slow Burn","Fast Burn"],b.burn)}</select></label>
+    <label class="f full">Synopsis<textarea id="f-synopsis">${esc(syn)}</textarea></label>
+    <div class="full photos">
+      <div class="ph"><div class="pv" id="pv-spine">${b.spineId?`<img src="${blob(b.spineId)}" alt="">`:"No spine photo"}</div>
+        <div class="ctl"><b>Spine photo</b><span class="hint">Shown on your shelves. Wide photos are turned upright for you.</span>
+        <input type="file" id="f-spine" accept="image/*" ${assets?"":"disabled"}><button type="button" class="btn small" id="rot" hidden>Rotate 90°</button></div></div>
+      <div class="ph"><div class="pv cv" id="pv-cover">${b.coverId?`<img src="${blob(b.coverId)}" alt="">`:"No cover"}</div>
+        <div class="ctl"><b>Cover photo</b><span class="hint">Shown when you open the book, and on Bookstagram posts.</span>
+        <input type="file" id="f-cover" accept="image/*" ${assets?"":"disabled"}></div></div>
+      ${assets?"":`<p class="hint full">Photo uploads need the app opened from its claude.ai link as its owner.</p>`}
+    </div>
+    <label class="f">Started<input id="f-started" type="date" value="${esc(b.started)}"></label>
+    <label class="f">Finished<input id="f-finished" type="date" value="${esc(b.finished)}"></label>
+    <div class="f full"><span style="font-size:13px;color:var(--muted);font-weight:600">Rating</span>
+      <div class="rating"><span class="starbox" id="starbox" role="slider" tabindex="0" aria-label="Rating" aria-valuemin="0" aria-valuemax="5" aria-valuenow="${rating}"></span><span id="rv" class="count"></span><button type="button" class="linkish" id="clearRating">Clear</button></div>
+      <span class="hint">Tap the left half of a star for a half star. Arrow keys step by quarters.</span></div>
+    <label class="f full">Review<textarea id="f-review" placeholder="What you'd post on Geno's Library">${esc(b.review)}</textarea></label>
+    ${manual.length?`<div class="f full"><span style="font-size:13px;color:var(--muted);font-weight:600">Hand-picked shelves</span><div class="checks">${manual.map(s=>`<label><input type="checkbox" value="${esc(s.id)}" class="mshelf" ${(b.shelves||[]).includes(s.id)?"checked":""}> ${esc(s.name)}</label>`).join("")}</div></div>`:""}
+    <datalist id="dl-genre">${genres.map(g=>`<option value="${esc(g)}">`).join("")}</datalist>
+    <datalist id="dl-trope">${tropes.map(g=>`<option value="${esc(g)}">`).join("")}</datalist>
+  </form>
+  <div class="foot">${isNew?"":`<button class="btn danger left" type="button" id="del">${b.fromSheet?"Remove from app":"Delete book"}</button>`}<span class="err" id="err"></span><button class="btn ghost" type="button" id="cancel">Cancel</button><button class="btn primary" type="button" id="save">Save</button></div>`);
+
+  const sb=ov.querySelector("#starbox"), rv=ov.querySelector("#rv");
+  const drawStars=()=>{sb.innerHTML=starsSVG(rating,28);rv.textContent=rating?rating+" / 5":"Not rated";sb.setAttribute("aria-valuenow",rating);};
+  drawStars();
+  sb.addEventListener("click",e=>{const r=sb.getBoundingClientRect();const size=28,step=size+4;const x=e.clientX-r.left;const i=Math.max(0,Math.min(4,Math.floor(x/step)));rating=i+((x-i*step)<size/2?0.5:1);drawStars();});
+  sb.addEventListener("keydown",e=>{if(["ArrowRight","ArrowUp"].includes(e.key)){rating=Math.min(5,rating+0.25);drawStars();e.preventDefault();}if(["ArrowLeft","ArrowDown"].includes(e.key)){rating=Math.max(0,rating-0.25);drawStars();e.preventDefault();}});
+  ov.querySelector("#clearRating").addEventListener("click",()=>{rating=0;drawStars();});
+
+  const rot=ov.querySelector("#rot");
+  async function previewSpine(){ if(!pending.spine) return; const p=await prepImage(pending.spine,pending.spineRot,400); ov.querySelector("#pv-spine").innerHTML=`<img src="${p.preview}" alt="Spine preview">`; }
+  ov.querySelector("#f-spine").addEventListener("change",async e=>{
+    const f=e.target.files[0]; if(!f) return; pending.spine=f;
+    try{ const bmp=await createImageBitmap(f); pending.spineRot=bmp.width>bmp.height?90:0; }catch(_){ pending.spineRot=0; }
+    rot.hidden=false; previewSpine();
+  });
+  rot.addEventListener("click",()=>{pending.spineRot=(pending.spineRot+90)%360;previewSpine();});
+  ov.querySelector("#f-cover").addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;pending.cover=f;const p=await prepImage(f,0,400);ov.querySelector("#pv-cover").innerHTML=`<img src="${p.preview}" alt="Cover preview">`;});
+  ov.querySelector("#cancel").addEventListener("click",close);
+
+  const del=ov.querySelector("#del");
+  if(del){ let armed=false; del.addEventListener("click",async()=>{
+    if(!armed){armed=true;del.textContent="Tap again to confirm";return;}
+    try{ if(b.fromSheet) await patchUser(b.id,{hidden:true}); else await db.collection("books").doc(b.id).delete(); close(); }
+    catch(e){ ov.querySelector("#err").textContent="Couldn't remove it. Try again."; }
+  }); }
+
+  const saveBtn=ov.querySelector("#save");
+  saveBtn.addEventListener("click",async()=>{
+    const err=ov.querySelector("#err"); err.textContent="";
+    const val=id=>ov.querySelector(id).value.trim();
+    const title=val("#f-title"); if(!title){err.textContent="Add a title first.";ov.querySelector("#f-title").focus();return;}
+    const status=val("#f-status");
+    let finished=val("#f-finished"); if(status==="read"&&!finished) finished=new Date().toISOString().slice(0,10);
+    const synopsis=ov.querySelector("#f-synopsis").value.trim();
+    const prev=userDocs.get(b.id)||{};
+    const data={
+      title, author:val("#f-author"), pages:Number(val("#f-pages").replace(/[^\d]/g,""))||null, published:val("#f-published"), pov:val("#f-pov"),
+      genre:val("#f-genre"), seriesName:val("#f-seriesName"), seriesCount:val("#f-seriesCount"),
+      tropes:splitList(val("#f-tropes")), ending:val("#f-ending"), burn:val("#f-burn"), status,
+      started:val("#f-started")||undefined, finished:finished||undefined, rating:rating||undefined, review:ov.querySelector("#f-review").value.trim()||undefined,
+      shelves:[...ov.querySelectorAll(".mshelf:checked")].map(c=>c.value),
+      spineId:prev.spineId||b.spineId||undefined, spineRatio:prev.spineRatio||b.spineRatio||undefined, coverId:prev.coverId||b.coverId||undefined
+    };
+    if(!data.shelves.length) delete data.shelves;
+    if(synopsis && synopsis!==syn) data.synopsis=synopsis; else if(prev.synopsis && synopsis===syn) data.synopsis=prev.synopsis;
+    if(!b.fromSheet) data.added=prev.added||new Date().toISOString().slice(0,10);
+    saveBtn.disabled=true; saveBtn.textContent="Saving…";
+    try{
+      if(pending.spine&&assets){ const p=await prepImage(pending.spine,pending.spineRot); const up=await assets.upload(p.blob,{type:"image/jpeg"}); data.spineId=up.id; data.spineRatio=Number(p.ratio.toFixed(4)); }
+      if(pending.cover&&assets){ const p=await prepImage(pending.cover,0,1400); const up=await assets.upload(p.blob,{type:"image/jpeg"}); data.coverId=up.id; }
+      const id=isNew?db.collection("books").doc().id:b.id;
+      await saveUser(id,data,!!b.fromSheet);
+      close();
+    }catch(e){
+      saveBtn.disabled=false; saveBtn.textContent="Save";
+      err.textContent=(e&&e.code==="too_large")?"That photo is too big. Try a smaller one.":!db?"Saving isn't available in this view.":"Couldn't save. Check your connection and try again.";
+    }
+  });
+}
+
+/* ---------- shelf editor ---------- */
+function openShelf(s){
+  const isNew=!s; s=s?{...s}:{type:"genre",value:"",color:PALETTE[0].color,name:""};
+  const tropes=[...new Set(books().flatMap(x=>x.tropes||[]))].sort();
+  const ov=modal(`<h2>${isNew?"New shelf":"Edit shelf"}</h2>
+  <div class="grid">
+    <label class="f full">Shelf name<input id="s-name" value="${esc(s.name)}" placeholder="Found Family"></label>
+    <label class="f">What goes on it<select id="s-type">${Object.entries(RULES).map(([k,v])=>`<option value="${k}" ${s.type===k?"selected":""}>${v}</option>`).join("")}</select></label>
+    <label class="f" id="s-valwrap">Match<input id="s-value" list="dl-sv" value="${esc(s.value)}"><datalist id="dl-sv"></datalist><span class="hint" id="s-hint"></span></label>
+    <div class="f full"><span style="font-size:13px;color:var(--muted);font-weight:600">Shelf color</span>
+      <div class="swatches">${PALETTE.map(p=>`<button type="button" class="sw" style="background:${p.color}" data-c="${p.color}" title="${esc(p.name)}" aria-label="${esc(p.name)} color" aria-pressed="${String(s.color).toLowerCase()===p.color.toLowerCase()}"></button>`).join("")}<input type="color" id="s-color" value="${esc(s.color||NEUTRAL)}" aria-label="Custom color"></div>
+      <span class="hint">Your genre colors from the sheet. A genre shelf picks its own color.</span></div>
+  </div>
+  <div class="foot">${isNew?"":`<button class="btn danger left" type="button" id="del">Delete shelf</button>`}<span class="err" id="err"></span><button class="btn ghost" type="button" id="cancel">Cancel</button><button class="btn primary" type="button" id="save">Save shelf</button></div>`);
+  let color=s.color||NEUTRAL;
+  const typeEl=ov.querySelector("#s-type"), valEl=ov.querySelector("#s-value"), dl=ov.querySelector("#dl-sv"), hint=ov.querySelector("#s-hint"), wrap=ov.querySelector("#s-valwrap"), nameEl=ov.querySelector("#s-name");
+  const setColor=c=>{color=c;ov.querySelector("#s-color").value=c;ov.querySelectorAll(".sw").forEach(x=>x.setAttribute("aria-pressed",x.dataset.c.toLowerCase()===c.toLowerCase()));};
+  function syncType(){
+    const t=typeEl.value; wrap.hidden=t==="manual";
+    const opts={genre:PALETTE.map(p=>p.name),trope:tropes,burn:["Slow Burn","Fast Burn"],ending:["HEA","HFN"],status:Object.keys(STATUS)}[t]||[];
+    dl.innerHTML=opts.map(o=>`<option value="${esc(o)}">`).join("");
+    hint.textContent={genre:"Books whose genre includes this. MM Romance also catches YA MM Romance.",trope:"Books tagged with this exact trope.",burn:"Slow Burn or Fast Burn",ending:"HEA or HFN",status:"tbr, reading, read or dnf"}[t]||"";
+  }
+  syncType();
+  typeEl.addEventListener("change",syncType);
+  valEl.addEventListener("input",()=>{ if(typeEl.value==="genre"){ const p=PALETTE.find(p=>norm(p.name)===norm(valEl.value)); if(p) setColor(p.color); } if(!nameEl.dataset.touched) nameEl.value=valEl.value; });
+  nameEl.addEventListener("input",()=>{nameEl.dataset.touched="1";});
+  if(!isNew) nameEl.dataset.touched="1";
+  ov.querySelectorAll(".sw").forEach(x=>x.addEventListener("click",()=>setColor(x.dataset.c)));
+  ov.querySelector("#s-color").addEventListener("input",e=>setColor(e.target.value));
+  ov.querySelector("#cancel").addEventListener("click",close);
+  const del=ov.querySelector("#del");
+  if(del){ let armed=false; del.addEventListener("click",async()=>{ if(!armed){armed=true;del.textContent="Tap again to delete";return;} try{ await db.collection("shelves").doc(s.id).delete(); close(); if(view()==="case") location.hash="shelves"; }catch(e){ ov.querySelector("#err").textContent="Couldn't delete. Try again."; } }); }
+  ov.querySelector("#save").addEventListener("click",async()=>{
+    const err=ov.querySelector("#err"); const name=nameEl.value.trim(); const type=typeEl.value; const value=valEl.value.trim();
+    if(!name){err.textContent="Give the shelf a name.";return;}
+    if(type!=="manual"&&!value){err.textContent="Say what the shelf should match.";return;}
+    try{ const ref=isNew?db.collection("shelves").doc():db.collection("shelves").doc(s.id); await ref.set({name,type,value:type==="manual"?"":value,color,order:s.order??(shelves.length+1)}); close(); }
+    catch(e){ err.textContent="Couldn't save. Check your connection and try again."; }
+  });
+}
+
+/* ---------- pick my next read ---------- */
+const recentPicks=[];
+function openPicker(shelfId){
+  const tbrAll=books().filter(b=>b.status==="tbr");
+  const genres=[...new Set(tbrAll.map(b=>b.genre).filter(Boolean))].sort();
+  const tropes=[...new Set(tbrAll.flatMap(b=>b.tropes||[]))].sort();
+  const shelfOpts=[...shelves].sort((a,b)=>(a.order??99)-(b.order??99)).map(s=>`<option value="${esc(s.id)}" ${s.id===shelfId?"selected":""}>${esc(s.name)}</option>`).join("");
+  const reduce=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const ov=modal(`<h2>Pick my next read</h2>
+    <div class="picker-filters">
+      <label class="f">Pull from<select id="p-src"><option value="">Main Shelf (all TBR)</option>${shelfOpts}</select></label>
+      <label class="f">Genre<select id="p-genre"><option value="">Any genre</option>${genres.map(g=>`<option>${esc(g)}</option>`).join("")}</select></label>
+      <label class="f">Trope<input id="p-trope" list="dl-ptrope" placeholder="Any trope"><datalist id="dl-ptrope">${tropes.map(t=>`<option value="${esc(t)}">`).join("")}</datalist></label>
+      <label class="f">HEA / HFN<select id="p-ending"><option value="">Either</option><option>HEA</option><option>HFN</option></select></label>
+      <label class="f">Burn pace<select id="p-burn"><option value="">Either</option><option>Slow Burn</option><option>Fast Burn</option></select></label>
+      <label class="f">Max pages<input id="p-pages" inputmode="numeric" placeholder="No limit"></label>
+    </div>
+    <p class="hat" id="hat"></p>
+    <div class="stage" id="stage" aria-hidden="true"></div><div class="stage-ledge"></div>
+    <div id="result" aria-live="polite"></div>
+    <div class="foot"><span class="err" id="err"></span><button class="btn ghost" type="button" id="cancel">Close</button><button class="btn primary" type="button" id="go" data-autofocus>Pull a book</button></div>`);
+  const $=s=>ov.querySelector(s);
+  let pool=[], spinning=false;
+  function computePool(){
+    const src=$("#p-src").value, s=shelves.find(x=>x.id===src);
+    const g=$("#p-genre").value, t=norm($("#p-trope").value), e=$("#p-ending").value, bu=$("#p-burn").value, mp=parseInt($("#p-pages").value,10);
+    pool=tbrAll.filter(b=>(!s||matches(s,b))&&(!g||b.genre===g)&&(!t||(b.tropes||[]).some(x=>norm(x).includes(t)))&&(!e||b.ending===e)&&(!bu||b.burn===bu)&&(!mp||(Number(b.pages)||0)<=mp));
+    $("#hat").textContent=pool.length?`${pool.length.toLocaleString()} ${pool.length===1?"book":"books"} on the shelf to pick from`:"No TBR books match these choices. Loosen a filter.";
+    $("#go").disabled=!pool.length;
+    drawStage();
+  }
+  function sample(arr,n){ const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a.slice(0,n); }
+  function drawStage(winner){
+    const n=window.innerWidth<640?9:16;
+    let row=sample(pool.filter(b=>!winner||b.id!==winner.id),winner?n-1:n);
+    if(winner) row.splice(Math.floor(row.length/2),0,winner);
+    $("#stage").innerHTML=row.length?row.map(spineHTML).join(""):`<p class="stage-empty">The shelf is empty for this mix.</p>`;
+    return [...$("#stage").querySelectorAll(".spine")];
+  }
+  async function pull(){
+    if(spinning||!pool.length) return;
+    spinning=true; $("#go").disabled=true; $("#result").innerHTML="";
+    let choices=pool.filter(b=>!recentPicks.includes(b.id)); if(!choices.length) choices=pool;
+    const winner=choices[Math.floor(Math.random()*choices.length)];
+    recentPicks.push(winner.id); if(recentPicks.length>10) recentPicks.shift();
+    const spines=drawStage(winner);
+    const wi=spines.findIndex(el=>el.dataset.open===winner.id);
+    if(!reduce){
+      let delay=50, i=0;
+      const total=17+Math.floor(Math.random()*5);
+      for(let step=0;step<total;step++){
+        spines.forEach(el=>el.classList.remove("lit"));
+        i=step===total-1?wi:Math.floor(Math.random()*spines.length);
+        spines[i].classList.add("lit");
+        await sleep(delay); delay*=1.08;
+      }
+    }
+    spines.forEach((el,k)=>{el.classList.remove("lit");el.classList.add(k===wi?"pulled":"dim");});
+    await sleep(reduce?0:450);
+    showPick(winner);
+    spinning=false; $("#go").disabled=false; $("#go").textContent="Pull another";
+  }
+  async function showPick(b){
+    const c=genreColor(b.genre);
+    const cover=b.coverId?`<img src="${blob(b.coverId)}" alt="Cover of ${esc(b.title)}">`:`<span class="ct">${esc(b.title)}</span><span class="ca">${esc(b.author)}</span>`;
+    const bits=[b.genre,b.pages?Number(b.pages).toLocaleString()+" pages":"",b.ending,b.burn].filter(Boolean).map(esc).join(" · ");
+    $("#result").innerHTML=`<div class="pick" style="--c:${c}"><div class="cover">${cover}</div><div>
+      <span class="eyebrow">Your next read</span><h3>${esc(b.title)}</h3><p class="line">${esc(b.author)}</p>
+      ${bits?`<p class="line">${bits}</p>`:""}
+      ${b.seriesName?`<p class="line">${esc(b.seriesName)}${b.seriesCount?` · ${esc(b.seriesCount)} books`:""}</p>`:""}
+      ${(b.tropes||[]).length?`<span class="tchips">${b.tropes.map(t=>`<span class="tchip">${esc(t)}</span>`).join("")}</span>`:""}
+      <p class="syn" id="psyn"></p>
+      <div class="row" style="margin-top:12px"><button class="btn primary small" type="button" id="p-start">Start reading</button><button class="btn small" type="button" id="p-open">See full details</button></div>
+    </div></div>`;
+    synopsisFor(b).then(t=>{const el=$("#psyn"); if(el) el.textContent=t||"";});
+    $("#p-open").addEventListener("click",()=>openDetail(b.id));
+    $("#p-start").addEventListener("click",async()=>{
+      try{ await patchUser(b.id,{status:"reading",started:b.started||new Date().toISOString().slice(0,10)}); $("#p-start").textContent="Started"; $("#p-start").disabled=true; }
+      catch(e){ $("#err").textContent=db?"Couldn't save. Check your connection and try again.":"Saving isn't available in this view."; }
+    });
+  }
+  ["#p-src","#p-genre","#p-ending","#p-burn"].forEach(s=>$(s).addEventListener("change",computePool));
+  ["#p-trope","#p-pages"].forEach(s=>$(s).addEventListener("input",computePool));
+  $("#go").addEventListener("click",pull);
+  $("#cancel").addEventListener("click",close);
+  computePool();
+}
+
+/* ---------- Bookstagram post ---------- */
+function loadImg(src){return new Promise((res,rej)=>{const i=new Image();i.crossOrigin="anonymous";i.referrerPolicy="no-referrer";i.onload=()=>res(i);i.onerror=rej;i.src=src;});}
+function wrapLines(x,text,maxW){const words=String(text).split(/\s+/);const lines=[];let line="";for(const w of words){const t=line?line+" "+w:w;if(x.measureText(t).width>maxW&&line){lines.push(line);line=w;}else line=t;}if(line)lines.push(line);return lines;}
+function shade(hex,amt){const n=parseInt(hex.slice(1),16);const f=v=>Math.max(0,Math.min(255,Math.round(amt<0?v*(1+amt):v+(255-v)*amt)));return `rgb(${f(n>>16)},${f((n>>8)&255)},${f(n&255)})`;}
+function caption(b){
+  const r=Number(b.rating)||0;
+  const stars=r?("★".repeat(Math.floor(r))+(r%1>=0.5?"½":"")+` (${r}/5)`):"";
+  const tags=["#genoslibrary","#bookstagram","#bookreview"]; const g=norm(b.genre);
+  if(g.includes("mm")) tags.push("#mmromance","#queerbooks");
+  if(g.includes("young adult")) tags.push("#yabooks");
+  if(g.includes("sports")) tags.push("#sportsromance");
+  if(g.includes("dark")) tags.push("#darkromance");
+  if(g.includes("fantasy")) tags.push("#fantasyromance");
+  (b.tropes||[]).slice(0,3).forEach(t=>tags.push("#"+t.toLowerCase().replace(/[^a-z0-9]/g,"")));
+  const parts=[`${b.title}${b.author?" by "+b.author:""}`];
+  if(stars) parts.push(stars);
+  if(b.review) parts.push("",b.review);
+  const facts=[]; if((b.tropes||[]).length) facts.push("Tropes: "+b.tropes.join(", ")); if(b.ending) facts.push(b.ending); if(b.burn) facts.push(b.burn);
+  if(facts.length) parts.push("",facts.join(" · "));
+  parts.push("",[...new Set(tags)].join(" "));
+  return parts.join("\n");
+}
+async function drawPost(c,b){
+  const W=1080,H=1350; c.width=W; c.height=H; const x=c.getContext("2d");
+  const col=genreColor(b.genre);
+  try{ await Promise.all([document.fonts.load('70px "Gloock"'),document.fonts.load('600 30px "Figtree"')]); }catch(_){}
+  const g=x.createLinearGradient(0,0,0,H); g.addColorStop(0,shade(col,0.12)); g.addColorStop(1,shade(col,-0.55)); x.fillStyle=g; x.fillRect(0,0,W,H);
+  x.fillStyle="rgba(255,255,255,.85)"; x.font='600 26px "Figtree", sans-serif'; x.textAlign="center";
+  x.fillText("G E N O ' S   L I B R A R Y",W/2,80);
+  let img=null; try{ if(b.coverId) img=await loadImg(blob(b.coverId)); else if(b.spineId) img=await loadImg(blob(b.spineId)); }catch(_){ img=null; }
+  const boxH=620, top=120;
+  if(img){
+    const s=Math.min(560/img.width,boxH/img.height); const w=img.width*s,h=img.height*s; const ix=(W-w)/2, iy=top+(boxH-h)/2;
+    x.save(); x.shadowColor="rgba(0,0,0,.5)"; x.shadowBlur=40; x.shadowOffsetY=18; x.fillStyle="#000"; x.fillRect(ix,iy,w,h); x.restore();
+    x.drawImage(img,ix,iy,w,h);
+  }else{
+    const w=410,ix=(W-w)/2; x.fillStyle=shade(col,-0.3); x.fillRect(ix,top,w,boxH); x.fillStyle="#fff"; x.font='54px "Gloock", serif';
+    wrapLines(x,b.title,w-60).slice(0,5).forEach((l,i)=>x.fillText(l,W/2,top+200+i*64));
+  }
+  let y=top+boxH+90;
+  x.fillStyle="#fff"; x.font='68px "Gloock", serif';
+  wrapLines(x,b.title,W-140).slice(0,2).forEach(l=>{x.fillText(l,W/2,y);y+=76;});
+  x.font='500 34px "Figtree", sans-serif'; x.fillStyle="rgba(255,255,255,.85)"; if(b.author) x.fillText(b.author,W/2,y); y+=70;
+  const r=Number(b.rating)||0;
+  if(r){
+    const size=64,gap=18,total=size*5+gap*4; let sx=(W-total)/2;
+    for(let i=0;i<5;i++){
+      const path=new Path2D(); starPts(sx+size/2,y,size/2,size/4.6).forEach((p,j)=>j?path.lineTo(p[0],p[1]):path.moveTo(p[0],p[1])); path.closePath();
+      x.fillStyle="rgba(255,255,255,.25)"; x.fill(path);
+      const fill=Math.max(0,Math.min(1,r-i)); if(fill>0){x.save();x.beginPath();x.rect(sx,y-size/2,size*fill,size);x.clip();x.fillStyle="#F3D99A";x.fill(path);x.restore();}
+      sx+=size+gap;
+    }
+    y+=70; x.font='600 30px "Figtree", sans-serif'; x.fillStyle="#fff"; x.fillText(`${r} / 5`,W/2,y); y+=56;
+  }
+  const facts=[...(b.tropes||[]).slice(0,3)]; if(b.ending) facts.push(b.ending); if(b.burn) facts.push(b.burn);
+  if(facts.length){ x.font='500 28px "Figtree", sans-serif'; x.fillStyle="rgba(255,255,255,.8)"; wrapLines(x,facts.join("  ·  "),W-160).slice(0,2).forEach(l=>{x.fillText(l,W/2,y);y+=40;}); }
+}
+function openPost(b){
+  if(!b) return;
+  const ov=modal(`<h2>Bookstagram post</h2>
+  <div class="post-wrap"><canvas id="pc" aria-label="Post image preview"></canvas>
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <label class="f">Caption<textarea id="cap" style="min-height:300px">${esc(caption(b))}</textarea></label>
+    <span class="hint">Edit the caption before copying. It doesn't change your saved review.</span>
+  </div></div>
+  <div class="foot"><span class="err" id="err"></span><button class="btn ghost" type="button" id="cancel">Close</button><button class="btn" type="button" id="copy">Copy caption</button><button class="btn primary" type="button" id="dl">Save image</button></div>`);
+  const c=ov.querySelector("#pc");
+  (async()=>{ if(!b.coverId){ const u=await findCover("book",b); if(u) b={...b,coverId:u}; } drawPost(c,b); })();
+  ov.querySelector("#cancel").addEventListener("click",close);
+  ov.querySelector("#copy").addEventListener("click",async()=>{const t=ov.querySelector("#cap");try{await navigator.clipboard.writeText(t.value);ov.querySelector("#copy").textContent="Copied";}catch(_){t.select();ov.querySelector("#err").textContent="The caption is selected. Copy it with your keyboard or a long-press.";}});
+  const dlb=ov.querySelector("#dl");
+  if(dlb) dlb.addEventListener("click",async()=>{
+    let data=null; try{ data=await new Promise(res=>c.toBlob(res,"image/png")); }catch(_){ data=null; }
+    const name=(b.title||"post").replace(/[^\w\- ]+/g,"").trim().replace(/\s+/g,"-").toLowerCase()+"-review.png";
+    if(!data){ ov.querySelector("#err").textContent="This cover's website doesn't allow saving it into an image. Take a screenshot instead, or upload the cover with Edit."; return; }
+    const file=new File([data],name,{type:"image/png"});
+    try{
+      if(navigator.canShare&&navigator.canShare({files:[file]})){ await navigator.share({files:[file],text:ov.querySelector("#cap").value}); dlb.textContent="Shared"; return; }
+      const a=document.createElement("a"); a.href=URL.createObjectURL(file); a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),5000); dlb.textContent="Saved";
+    }catch(e){ if(e&&e.name!=="AbortError") ov.querySelector("#err").textContent="Couldn't save the image. Try again."; }
+  });
+}
+
+/* ================= WATCH & LISTEN ROOMS ================= */
+const WATCH_PAL=[["horror","#6A1717"],["thriller","#1E3A5F"],["crime","#2D5352"],["mystery","#2D5352"],["romance","#A8324E"],["comedy","#C98418"],["drama","#7D2E3E"],["action","#B4411E"],["adventure","#B4411E"],["sci-fi","#2B6E99"],["fantasy","#2B6E99"],["documentary","#55703B"],["animation","#D96B27"],["anime","#D96B27"],["musical","#9C3A87"],["family","#3B8C7C"],["reality","#8C6D1F"],["western","#8A5A2B"],["war","#5C5A3A"]];
+const MUSIC_PAL=[["k-pop","#B04FC9"],["pop","#D2447C"],["country","#B5722F"],["r&b","#6D2E8C"],["soul","#6D2E8C"],["hip","#C59A2E"],["rap","#C59A2E"],["rock","#9A2323"],["alt","#3E6B5A"],["indie","#567A9C"],["dance","#2F5FD0"],["electr","#2F5FD0"],["musical","#A8324E"],["soundtrack","#A8324E"],["broadway","#A8324E"],["jazz","#1F5566"],["folk","#6B7A3A"],["latin","#D0532E"],["gospel","#8A6D2A"],["christian","#8A6D2A"],["classical","#5E5470"]];
+function palColor(pal,g,fallback){ const s=String(g||"").toLowerCase(); const first=s.split(",")[0]; for(const [k,c] of pal) if(first.includes(k)) return c; for(const [k,c] of pal) if(s.includes(k)) return c; return fallback; }
+const watchColor=g=>palColor(WATCH_PAL,g,"#5B5650");
+const musicColor=g=>palColor(MUSIC_PAL,g,"#66605A");
+const firstGenre=g=>String(g||"").split(",")[0].trim()||"Other";
+function toISO(text){ const s=String(text||"").trim(); if(!s) return ""; if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s; const d=new Date(s); if(isNaN(d)) return ""; return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; }
+const nkey=s=>String(s||"").toLowerCase().replace(/[^a-z0-9]/g,"");
+
+let wcat=new Map(), wuser=new Map(), lcat=new Map(), luser=new Map(), wmeta=null, lmeta=null;
+let wLoaded=false, lLoaded=false, WALL=[], LALL=[], wDirty=true, lDirty=true;
+const wui={search:"",type:"all",genre:"",where:"",group:"none",sort:"title",limit:240};
+const lui={search:"",genre:"",sort:"artist",open:new Set()};
+
+function wexpand(id,c){ const rv=c.rv||{};
+  return {id,fromSheet:true,row:c.row,title:c.t||"",type:c.ty||"",genre:c.g||"",year:c.y||"",runtime:c.rt||"",where:c.ww||"",sheetStatus:c.st||"",description:c.ds||"",
+    status:c.seen?"seen":(/currently|watching/i.test(c.st||"")?"watching":"want"),rating:Number(rv.r)||0,review:rv.txt||"",watchedOn:rv.on||"",finished:toISO(rv.fin),rewatch:rv.rw||"",posterId:c.pv||undefined}; }
+function lexpand(id,c){ return {id,fromSheet:true,row:c.row,title:c.t||"",artist:c.a||"",tracks:c.n||"",length:c.len||"",genre:c.g||"",rating:Number(c.r)||0,favTrack:c.fav||"",status:c.done?"listened":"queue",coverId:c.cv||undefined}; }
+function mergeLayer(cat,user,fn,kind){ const out=new Map(); for(const [id,c] of cat) out.set(id,fn(id,c)); for(const [id,u] of user){ const base=out.get(id)||{id,fromSheet:false}; out.set(id,{...base,...u,id}); } return [...out.values()].filter(x=>!x.hidden&&x.title).map(x=>applyAuto(kind,x)); }
+function watchItems(){ if(wDirty){ WALL=mergeLayer(wcat,wuser,wexpand,"watch"); wDirty=false; } return WALL; }
+function albumItems(){ if(lDirty){ LALL=mergeLayer(lcat,luser,lexpand,"album"); lDirty=false; } return LALL; }
+const getWatch=id=>watchItems().find(x=>x.id===id);
+const getAlbum=id=>albumItems().find(x=>x.id===id);
+
+async function saveLayer(col,id,data,base,prevMap){
+  if(!db) throw new Error("no db");
+  if(data.coverId&&data.coverId===autoCovers.get((col==="albums"?"album":"watch")+":"+id)) delete data.coverId;
+  const out={};
+  for(const [k,v] of Object.entries(data)){ if(v===undefined) continue; if(base&&JSON.stringify(base[k]??"")===JSON.stringify(v??"")) continue; out[k]=v; }
+  await withRetry(()=>db.collection(col).doc(id).set(out));
+}
+async function patchLayer(col,id,prevMap,fields){ const cur={...(prevMap.get(id)||{}),...fields}; await withRetry(()=>db.collection(col).doc(id).set(cur)); }
+
+/* ---------- star input helper ---------- */
+function starInput(ov,init){
+  let rating=Number(init)||0; const sb=ov.querySelector("#starbox"), rv=ov.querySelector("#rv");
+  const draw=()=>{sb.innerHTML=starsSVG(rating,28);rv.textContent=rating?rating+" / 5":"Not rated";sb.setAttribute("aria-valuenow",rating);};
+  draw();
+  sb.addEventListener("click",e=>{const r=sb.getBoundingClientRect();const step=32;const x=e.clientX-r.left;const i=Math.max(0,Math.min(4,Math.floor(x/step)));rating=i+((x-i*step)<14?0.5:1);draw();});
+  sb.addEventListener("keydown",e=>{if(["ArrowRight","ArrowUp"].includes(e.key)){rating=Math.min(5,rating+0.25);draw();e.preventDefault();}if(["ArrowLeft","ArrowDown"].includes(e.key)){rating=Math.max(0,rating-0.25);draw();e.preventDefault();}});
+  ov.querySelector("#clearRating").addEventListener("click",()=>{rating=0;draw();});
+  return ()=>rating;
+}
+const starField=`<div class="f full"><span style="font-size:13px;color:var(--muted);font-weight:600">Rating</span><div class="rating"><span class="starbox" id="starbox" role="slider" tabindex="0" aria-label="Rating" aria-valuemin="0" aria-valuemax="5"></span><span id="rv" class="count"></span><button type="button" class="linkish" id="clearRating">Clear</button></div><span class="hint">Tap the left half of a star for a half star.</span></div>`;
+function photoField(id,label,hint,currentId,cls){ return `<div class="ph"><div class="pv ${cls||""}" id="pv-${id}">${currentId?`<img src="${blob(currentId)}" alt="">`:"No photo"}</div><div class="ctl"><b>${label}</b><span class="hint">${hint}</span><input type="file" id="f-${id}" accept="image/*" ${assets?"":"disabled"}>${id==="spine"?`<button type="button" class="btn small" id="rot" hidden>Rotate 90°</button>`:""}</div></div>`; }
+function wirePhoto(ov,id,pending,autoRotate){
+  const rot=ov.querySelector("#rot");
+  const preview=async()=>{ const p=await prepImage(pending[id],pending[id+"Rot"]||0,400); ov.querySelector("#pv-"+id).innerHTML=`<img src="${p.preview}" alt="Preview">`; };
+  ov.querySelector("#f-"+id).addEventListener("change",async e=>{ const f=e.target.files[0]; if(!f) return; pending[id]=f; pending[id+"Rot"]=0;
+    if(autoRotate){ try{ const b=await createImageBitmap(f); pending[id+"Rot"]=b.width>b.height?90:0; }catch(_){} if(rot){ rot.hidden=false; rot.onclick=()=>{pending[id+"Rot"]=(pending[id+"Rot"]+90)%360;preview();}; } }
+    preview(); });
+}
+async function uploadPending(pending,id,max){ if(!pending[id]||!assets) return null; const p=await prepImage(pending[id],pending[id+"Rot"]||0,max||1600); const up=await assets.upload(p.blob,{type:"image/jpeg"}); return {id:up.id,ratio:Number(p.ratio.toFixed(4))}; }
+
+/* ================= WATCH ================= */
+function tapeHTML(m){
+  const c=watchColor(m.genre), label=esc(m.title);
+  const badge=m.status==="watching"?`<span class="badge" title="Watching now"></span>`:"";
+  if(m.spineId) return `<button class="spine" type="button" data-wopen="${esc(m.id)}" style="width:calc(var(--h) * ${(Number(m.spineRatio)||0.15).toFixed(4)});min-width:14px;max-width:70px" aria-label="${label}" title="${label}"><img src="${blob(m.spineId)}" alt="" loading="lazy">${badge}</button>`;
+  const show=/show|series/i.test(m.type);
+  return `<button class="tape${show?" box":""}" type="button" data-wopen="${esc(m.id)}" style="--g:${c}" aria-label="${label}" title="${label}"><span class="lab"><span class="tt">${label}</span></span><span class="ty">${show?"SERIES":"VHS"}</span>${badge}</button>`;
+}
+function posterHTML(m,big){
+  if(m.posterId) return `<img src="${blob(m.posterId)}" alt="Poster for ${esc(m.title)}">`;
+  return `<span class="pz-top">${esc((m.type||"Feature").toUpperCase())}${m.year?" · "+esc(m.year):""}</span><span class="pz-title">${esc(m.title)}</span><span class="pz-bot">${esc(firstGenre(m.genre))}${m.runtime?" · "+esc(m.runtime):""}</span>`;
+}
+function watchFilter(list){
+  const q=norm(wui.search);
+  return list.filter(m=>(wui.type==="all"||(wui.type==="show"?/show|series/i.test(m.type):!/show|series/i.test(m.type)))&&(!wui.genre||norm(m.genre).includes(norm(wui.genre)))&&(!wui.where||m.where===wui.where)&&(!q||norm(m.title+" "+m.genre+" "+m.where+" "+m.year).includes(q)));
+}
+const WSORT={title:(a,b)=>String(a.title).replace(/^the\s+/i,"").localeCompare(String(b.title).replace(/^the\s+/i,"")),newest:(a,b)=>String(b.year).localeCompare(String(a.year))||WSORT.title(a,b),oldest:(a,b)=>String(a.year||"9999").localeCompare(String(b.year||"9999"))||WSORT.title(a,b),genre:(a,b)=>firstGenre(a.genre).localeCompare(firstGenre(b.genre))||WSORT.title(a,b),sheet:(a,b)=>(a.row??1e9)-(b.row??1e9)};
+function renderWatchShelf(){
+  const all=watchItems(); const want=all.filter(m=>m.status!=="seen");
+  const genres=[...new Set(all.flatMap(m=>String(m.genre).split(",").map(s=>s.trim())).filter(Boolean))].sort();
+  const wheres=[...new Set(all.map(m=>m.where).filter(Boolean))].sort((a,b)=>a.localeCompare(b,undefined,{sensitivity:"base"}));
+  const list=watchFilter(want).sort(WSORT[wui.sort]);
+  const movies=want.filter(m=>!/show|series/i.test(m.type)).length;
+  let out=`<div class="view-head"><div><h1>VHS Shelf</h1><p class="sub">${want.length.toLocaleString()} to watch · ${movies.toLocaleString()} movies, ${(want.length-movies).toLocaleString()} shows${wmeta&&wmeta.syncedAt?` · synced ${esc(fmtDate(wmeta.syncedAt.slice(0,10)))}`:""}</p></div>
+    <div class="toolbar"><button class="btn" type="button" data-bulk="watch">Add photos in bulk</button><button class="btn" type="button" data-wimport>Refresh from sheet</button>${want.length?`<button class="btn primary" type="button" data-wpick>Press Play</button>`:""}</div></div>
+    <div class="toolbar" style="margin-bottom:14px">
+      <input class="search" id="q-watch" type="search" placeholder="Search titles, genres, services" value="${esc(wui.search)}" aria-label="Search your watch list">
+      ${["all","movie","show"].map(k=>`<button class="chip" type="button" data-wtype="${k}" aria-pressed="${wui.type===k}">${{all:"All",movie:"Movies",show:"Shows"}[k]}</button>`).join("")}
+      <select class="sel" id="w-genre" aria-label="Genre"><option value="">Any genre</option>${genres.map(g=>`<option ${wui.genre===g?"selected":""}>${esc(g)}</option>`).join("")}</select>
+      <select class="sel" id="w-where" aria-label="Where to watch"><option value="">Any service</option>${wheres.map(g=>`<option ${wui.where===g?"selected":""}>${esc(g)}</option>`).join("")}</select>
+      <select class="sel" id="w-group" aria-label="Group shelves">${[["none","One big shelf"],["genre","Shelf per genre"],["type","Movies / Shows"],["where","Shelf per service"]].map(([k,l])=>`<option value="${k}" ${wui.group===k?"selected":""}>${l}</option>`).join("")}</select>
+      <select class="sel" id="w-sort" aria-label="Sort">${[["title","Sort: Title"],["newest","Sort: Newest"],["oldest","Sort: Oldest"],["genre","Sort: Genre"],["sheet","Sort: Sheet order"]].map(([k,l])=>`<option value="${k}" ${wui.sort===k?"selected":""}>${l}</option>`).join("")}</select>
+    </div>`;
+  if(!want.length) return out+`<div class="empty"><h2>Your VHS shelf is empty</h2><p>Sync your TBW List to stack every movie and show here, or add one with + Add title.</p></div>`;
+  if(!list.length) return out+`<div class="empty"><h2>No matches</h2><p>Nothing on your watch list matches those filters.</p></div>`;
+  if(wui.group==="none"){
+    const shown=list.slice(0,wui.limit);
+    out+=`<div class="case vhs">${shown.map(tapeHTML).join("")}</div>`;
+    if(list.length>shown.length) out+=`<div class="more">Showing ${shown.length.toLocaleString()} of ${list.length.toLocaleString()}<button class="btn" type="button" id="more-watch">Show more</button></div>`;
+    return out;
+  }
+  const keyOf={genre:m=>firstGenre(m.genre),type:m=>/show|series/i.test(m.type)?"Shows":"Movies",where:m=>m.where||"Service not set"}[wui.group];
+  const groups=new Map(); list.forEach(m=>{const k=keyOf(m); if(!groups.has(k)) groups.set(k,[]); groups.get(k).push(m);});
+  [...groups.entries()].sort((a,b)=>b[1].length-a[1].length).forEach(([k,items])=>{
+    const c=wui.group==="genre"?watchColor(k):"#3a3040";
+    out+=`<section class="shelf" style="--c:${c}"><div class="shelf-head"><h2 class="plaque">${esc(k)}</h2><span class="count">${items.length.toLocaleString()}</span>${items.length>48?`<span class="right"><button class="btn ghost small" type="button" data-wfocus="${esc(k)}">See all</button></span>`:""}</div>
+      <div class="case vhs tinted" style="--c:${c}">${items.slice(0,48).map(tapeHTML).join("")}</div></section>`;
+  });
+  return out;
+}
+function renderWatched(){
+  const seen=watchItems().filter(m=>m.status==="seen").sort((a,b)=>String(b.finished||"").localeCompare(String(a.finished||""))||WSORT.title(a,b));
+  const yr=String(new Date().getFullYear()); const thisYear=seen.filter(m=>String(m.finished||"").startsWith(yr));
+  const rated=seen.filter(m=>Number(m.rating)>0); const avg=rated.length?rated.reduce((s,m)=>s+Number(m.rating),0)/rated.length:0;
+  let out=`<div class="view-head"><h1>Watched &amp; Reviewed</h1></div><div class="stats">
+    <div class="stat"><b>${thisYear.length}</b><span>finished in ${yr}</span></div>
+    <div class="stat"><b>${seen.filter(m=>!/show|series/i.test(m.type)).length.toLocaleString()}</b><span>movies watched</span></div>
+    <div class="stat"><b>${seen.filter(m=>/show|series/i.test(m.type)).length.toLocaleString()}</b><span>shows watched</span></div>
+    <div class="stat"><b>${avg?avg.toFixed(2):"–"}</b><span>average rating</span></div></div>`;
+  if(!seen.length) return out+`<div class="empty"><h2>Nothing watched yet</h2><p>Open any tape and mark it watched, then add your rating and notes.</p></div>`;
+  out+=`<div class="posters">`+seen.slice(0,ui.listLimit).map(m=>`<article class="pcard" style="--c:${watchColor(m.genre)}">
+    <button class="poster" type="button" data-wopen="${esc(m.id)}" aria-label="Open ${esc(m.title)}">${posterHTML(m)}</button>
+    <div class="pc-body"><h3>${esc(m.title)}</h3><p class="meta">${[m.type,m.year,m.watchedOn].filter(Boolean).map(esc).join(" · ")}</p>
+    ${Number(m.rating)>0?starsSVG(Number(m.rating),15):`<span class="meta">Not rated yet</span>`}${/^y/i.test(m.rewatch)?` <span class="pill read" style="margin-left:6px">Rewatch</span>`:""}
+    <p class="rev">${m.review?esc(m.review):"<span class='meta'>No notes yet.</span>"}</p>
+    <button class="btn small" type="button" data-wedit="${esc(m.id)}">${m.review?"Edit notes":"Rate &amp; review"}</button></div></article>`).join("")+`</div>`;
+  if(seen.length>ui.listLimit) out+=`<div class="more"><button class="btn" type="button" id="more-list">Show more</button></div>`;
+  return out;
+}
+function openWatchDetail(id){
+  const m=getWatch(id); if(!m) return; const c=watchColor(m.genre);
+  const fact=(l,v,wide)=>`<div${wide?' class="wide"':""}><dt>${l}</dt><dd>${v||'<span class="meta">—</span>'}</dd></div>`;
+  const ov=modal(`<div class="detail" style="--c:${c}">
+    <div><div class="poster big">${posterHTML(m)}</div>${m.posterId?"":`<p class="cover-note">No poster yet. Add one with Edit.</p>`}</div>
+    <div><h2>${esc(m.title)}</h2><p class="by">${esc([m.type,m.year].filter(Boolean).join(" · "))}</p>
+      <div class="row" style="align-items:center"><span class="pill ${m.status==="seen"?"read":m.status==="watching"?"reading":""}">${{want:"Want to watch",watching:"Watching",seen:"Watched"}[m.status]}</span>${Number(m.rating)>0?starsSVG(Number(m.rating),16):""}</div>
+      <dl class="facts">${fact("Type",esc(m.type))}${fact("Year released",esc(m.year))}${fact("Genre",esc(m.genre))}${fact("Runtime",esc(m.runtime))}${fact("Where to watch",esc(m.where))}${fact("Sheet status",esc(m.sheetStatus))}
+      ${m.status==="seen"?fact("Watched on",esc(m.watchedOn))+fact("Finished",esc(fmtDate(m.finished)))+(m.review?fact("Your notes",`<span style="white-space:pre-line">${esc(m.review)}</span>`,true):""):""}</dl>
+      <p class="syn-h">Description</p><p class="syn">${m.description?esc(m.description):'<span class="meta">No description in your sheet for this one.</span>'}</p></div></div>
+    <div class="foot"><span class="err" id="err"></span><button class="btn ghost left" type="button" id="close">Close</button>
+      ${m.status==="want"?`<button class="btn" type="button" id="start">Start watching</button>`:""}
+      ${m.status!=="seen"?`<button class="btn" type="button" id="done">Mark as watched</button>`:""}
+      <button class="btn primary" type="button" id="edit" data-autofocus>${m.status==="seen"?"Edit, rate & review":"Edit & add photos"}</button></div>`);
+  ov.querySelector("#close").addEventListener("click",close);
+  ov.querySelector("#edit").addEventListener("click",()=>openWatchEdit(getWatch(id)));
+  const q=async(f,then)=>{ try{ await patchLayer("watch",id,wuser,f); then&&then(); }catch(_){ ov.querySelector("#err").textContent="Couldn't save. Check your connection and try again."; } };
+  const st=ov.querySelector("#start"); if(st) st.addEventListener("click",()=>q({status:"watching"},()=>openWatchDetail(id)));
+  const dn=ov.querySelector("#done"); if(dn) dn.addEventListener("click",()=>q({status:"seen",finished:m.finished||new Date().toISOString().slice(0,10)},()=>openWatchEdit(getWatch(id))));
+}
+function openWatchEdit(m){
+  const isNew=!m; m=m?{...m}:{status:"want",type:"Movie"};
+  const base=m.fromSheet&&wcat.has(m.id)?wexpand(m.id,wcat.get(m.id)):null;
+  const pending={};
+  const opt=(arr,cur)=>arr.map(([v,l])=>`<option value="${v}" ${cur===v?"selected":""}>${l}</option>`).join("");
+  const ov=modal(`<h2>${isNew?"Add a movie or show":"Edit "+esc(m.title)}</h2>
+  ${m.fromSheet?`<p class="hint" style="margin:-8px 0 14px">From your TBW List. Changes here stay in the app and win over the sheet on future syncs.</p>`:""}
+  <form class="grid" novalidate onsubmit="return false">
+    <label class="f full">Title<input id="f-title" value="${esc(m.title)}"></label>
+    <label class="f">Type<select id="f-type">${opt([["Movie","Movie"],["Show","Show"]],/show|series/i.test(m.type)?"Show":"Movie")}</select></label>
+    <label class="f">Status<select id="f-status">${opt([["want","Want to watch"],["watching","Watching"],["seen","Watched"]],m.status)}</select></label>
+    <label class="f">Genre<input id="f-genre" value="${esc(m.genre)}" placeholder="Drama, Crime/Mystery"></label>
+    <label class="f">Year released<input id="f-year" value="${esc(m.year)}"></label>
+    <label class="f">Runtime<input id="f-runtime" value="${esc(m.runtime)}" placeholder="1h 47m or 2 Seasons; 14 Episodes"></label>
+    <label class="f">Where to watch<input id="f-where" value="${esc(m.where)}"></label>
+    <label class="f full">Description<textarea id="f-description">${esc(m.description)}</textarea></label>
+    <div class="full photos">${photoField("poster","Poster","Shown when you open it and on Watched &amp; Reviewed.",m.posterId,"cv")}${photoField("spine","VHS spine","Optional. Replaces the label on your shelf. Wide photos are turned upright.",m.spineId)}</div>
+    <label class="f">Watched on<input id="f-watchedOn" value="${esc(m.watchedOn)}" placeholder="Netflix, In Theaters…"></label>
+    <label class="f">Finished<input id="f-finished" type="date" value="${esc(m.finished)}"></label>
+    <label class="f">Rewatch?<select id="f-rewatch">${opt([["",""],["Y","Yes"],["N","No"]],/^y/i.test(m.rewatch)?"Y":/^n/i.test(m.rewatch)?"N":"")}</select></label>
+    ${starField}
+    <label class="f full">Review / notes<textarea id="f-review">${esc(m.review)}</textarea></label>
+  </form>
+  <div class="foot">${isNew?"":`<button class="btn danger left" type="button" id="del">${m.fromSheet?"Remove from app":"Delete"}</button>`}<span class="err" id="err"></span><button class="btn ghost" type="button" id="cancel">Cancel</button><button class="btn primary" type="button" id="save">Save</button></div>`);
+  const getRating=starInput(ov,m.rating);
+  wirePhoto(ov,"poster",pending,false); wirePhoto(ov,"spine",pending,true);
+  ov.querySelector("#cancel").addEventListener("click",close);
+  const del=ov.querySelector("#del");
+  if(del){ let armed=false; del.addEventListener("click",async()=>{ if(!armed){armed=true;del.textContent="Tap again to confirm";return;} try{ if(m.fromSheet) await patchLayer("watch",m.id,wuser,{hidden:true}); else await db.collection("watch").doc(m.id).delete(); close(); }catch(_){ ov.querySelector("#err").textContent="Couldn't remove it. Try again."; } }); }
+  const save=ov.querySelector("#save");
+  save.addEventListener("click",async()=>{
+    const v=s=>ov.querySelector(s).value.trim(), err=ov.querySelector("#err");
+    const title=v("#f-title"); if(!title){err.textContent="Add a title first.";return;}
+    const status=v("#f-status"); let finished=v("#f-finished"); if(status==="seen"&&!finished) finished=new Date().toISOString().slice(0,10);
+    const prev=wuser.get(m.id)||{};
+    const data={title,type:v("#f-type"),status,genre:v("#f-genre"),year:v("#f-year"),runtime:v("#f-runtime"),where:v("#f-where"),description:ov.querySelector("#f-description").value.trim(),
+      watchedOn:v("#f-watchedOn"),finished,rewatch:v("#f-rewatch"),rating:getRating(),review:ov.querySelector("#f-review").value.trim(),
+      posterId:prev.posterId||m.posterId||undefined,spineId:prev.spineId||m.spineId||undefined,spineRatio:prev.spineRatio||m.spineRatio||undefined,sheetStatus:m.sheetStatus||undefined};
+    save.disabled=true; save.textContent="Saving…";
+    try{
+      const po=await uploadPending(pending,"poster",1400); if(po) data.posterId=po.id;
+      const sp=await uploadPending(pending,"spine"); if(sp){ data.spineId=sp.id; data.spineRatio=sp.ratio; }
+      await saveLayer("watch",isNew?db.collection("watch").doc().id:m.id,data,base);
+      close();
+    }catch(e){ save.disabled=false; save.textContent="Save"; err.textContent=e&&e.code==="too_large"?"That photo is too big. Try a smaller one.":!db?"Saving isn't available in this view.":"Couldn't save. Check your connection and try again."; }
+  });
+}
+
+/* ================= LISTEN ================= */
+function sleeveHTML(a){
+  if(a.coverId) return `<img src="${blob(a.coverId)}" alt="" loading="lazy">`;
+  return `<span class="sl-artist">${esc(a.artist)}</span><span class="sl-title">${esc(a.title)}</span>`;
+}
+function recordHTML(a){
+  const c=musicColor(a.genre);
+  return `<button class="lp" type="button" data-lopen="${esc(a.id)}" style="--g:${c}" aria-label="${esc(a.title)} by ${esc(a.artist)}" title="${esc(a.title)} · ${esc(a.artist)}"><span class="disc"><span class="lbl"${a.coverId?` style="background-image:url(${blob(a.coverId)})"`:""}></span></span><span class="sleeve${a.coverId?" has":""}">${sleeveHTML(a)}</span></button>`;
+}
+const LSORT={artist:(a,b)=>String(a.artist).localeCompare(String(b.artist))||String(a.title).localeCompare(String(b.title)),title:(a,b)=>String(a.title).localeCompare(String(b.title)),sheet:(a,b)=>(a.row??1e9)-(b.row??1e9)};
+function renderRecordWall(){
+  const all=albumItems(), queue=all.filter(a=>a.status!=="listened");
+  const q=norm(lui.search);
+  const list=queue.filter(a=>(!lui.genre||firstGenre(a.genre)===lui.genre)&&(!q||norm(a.title+" "+a.artist+" "+a.genre).includes(q))).sort(LSORT[lui.sort]);
+  const genres=[...new Set(queue.map(a=>firstGenre(a.genre)))].sort();
+  queueCovers("album",list.slice(0,200));
+  let out=`<div class="view-head"><div><h1>Record Wall</h1><p class="sub">${queue.length.toLocaleString()} albums to listen to${lmeta&&lmeta.syncedAt?` · synced ${esc(fmtDate(lmeta.syncedAt.slice(0,10)))}`:""}</p></div>
+    <div class="toolbar"><input class="search" id="q-listen" type="search" placeholder="Search albums or artists" value="${esc(lui.search)}" aria-label="Search albums">
+    <select class="sel" id="l-genre" aria-label="Genre"><option value="">Every genre</option>${genres.map(g=>`<option ${lui.genre===g?"selected":""}>${esc(g)}</option>`).join("")}</select>
+    <select class="sel" id="l-sort" aria-label="Sort">${[["artist","Sort: Artist"],["title","Sort: Album"],["sheet","Sort: Sheet order"]].map(([k,l])=>`<option value="${k}" ${lui.sort===k?"selected":""}>${l}</option>`).join("")}</select>
+    <button class="btn" type="button" data-bulk="listen">Add photos in bulk</button><button class="btn" type="button" data-limport>Refresh from sheet</button>${queue.length?`<button class="btn primary" type="button" data-lpick>Drop the needle</button>`:""}</div></div>`;
+  if(!queue.length) return out+`<div class="empty"><h2>Your record wall is empty</h2><p>Sync your Albums to Listen To tab to hang every album here, or add one with + Add album.</p></div>`;
+  if(!list.length) return out+`<div class="empty"><h2>No matches</h2></div>`;
+  const groups=new Map(); list.forEach(a=>{const k=firstGenre(a.genre); if(!groups.has(k)) groups.set(k,[]); groups.get(k).push(a);});
+  [...groups.entries()].sort((a,b)=>b[1].length-a[1].length).forEach(([k,items])=>{
+    const openAll=lui.open.has(k)||!!lui.genre; const shown=openAll?items:items.slice(0,18);
+    out+=`<section class="shelf" style="--c:${musicColor(k)}"><div class="shelf-head"><h2 class="plaque">${esc(k)}</h2><span class="count">${items.length.toLocaleString()} ${items.length===1?"album":"albums"}</span>${items.length>shown.length?`<span class="right"><button class="btn ghost small" type="button" data-lgroup="${esc(k)}">Show all ${items.length}</button></span>`:""}</div>
+      <div class="wall">${shown.map(recordHTML).join("")}</div></section>`;
+  });
+  return out;
+}
+function renderListened(){
+  const done=albumItems().filter(a=>a.status==="listened").sort((a,b)=>String(b.listenedOn||"").localeCompare(String(a.listenedOn||""))||(Number(b.rating)||0)-(Number(a.rating)||0));
+  queueCovers("album",done.slice(0,ui.listLimit));
+  const rated=done.filter(a=>Number(a.rating)>0); const avg=rated.length?rated.reduce((s,a)=>s+Number(a.rating),0)/rated.length:0;
+  const top=[...rated].sort((a,b)=>b.rating-a.rating)[0];
+  let out=`<div class="view-head"><h1>Listened &amp; Rated</h1></div><div class="stats">
+    <div class="stat"><b>${done.length.toLocaleString()}</b><span>albums listened to</span></div>
+    <div class="stat"><b>${avg?avg.toFixed(2):"–"}</b><span>average rating</span></div>
+    <div class="stat"><b style="font-size:20px;line-height:1.3">${top?esc(top.title):"–"}</b><span>${top?"top rated · "+esc(top.artist):"top rated"}</span></div></div>`;
+  if(!done.length) return out+`<div class="empty"><h2>Nothing listened to yet</h2><p>Open any record, mark it listened, and add your rating and favorite track.</p></div>`;
+  out+=`<div class="albums">`+done.slice(0,ui.listLimit).map(a=>`<article class="acard" style="--g:${musicColor(a.genre)}">
+    <button class="sqcover" type="button" data-lopen="${esc(a.id)}" aria-label="Open ${esc(a.title)}">${sleeveHTML(a)}</button>
+    <div><h3>${esc(a.title)}</h3><p class="meta">${esc(a.artist)}${a.genre?" · "+esc(a.genre):""}</p>${Number(a.rating)>0?starsSVG(Number(a.rating),14):`<span class="meta">Not rated</span>`}
+    ${a.favTrack?`<p class="meta" style="margin-top:6px">Favorite track: <b style="color:var(--text)">${esc(a.favTrack)}</b></p>`:""}
+    ${a.review?`<p class="rev">${esc(a.review)}</p>`:""}
+    <button class="btn small" type="button" data-ledit="${esc(a.id)}" style="margin-top:8px">${a.rating?"Edit":"Rate"}</button></div></article>`).join("")+`</div>`;
+  if(done.length>ui.listLimit) out+=`<div class="more"><button class="btn" type="button" id="more-list">Show more</button></div>`;
+  return out;
+}
+function openAlbumDetail(id){
+  const a=getAlbum(id); if(!a) return; const c=musicColor(a.genre);
+  const fact=(l,v,wide)=>`<div${wide?' class="wide"':""}><dt>${l}</dt><dd>${v||'<span class="meta">—</span>'}</dd></div>`;
+  const ov=modal(`<div class="adetail" style="--g:${c}">
+    <div class="turntable"><span class="disc spin"><span class="lbl"${a.coverId?` style="background-image:url(${blob(a.coverId)})"`:""}></span></span><span class="sleeve big${a.coverId?" has":""}">${sleeveHTML(a)}</span></div>
+    <div><h2>${esc(a.title)}</h2><p class="by">${esc(a.artist)}</p>
+      <div class="row" style="align-items:center"><span class="pill ${a.status==="listened"?"read":""}">${a.status==="listened"?"Listened":"To listen"}</span>${Number(a.rating)>0?starsSVG(Number(a.rating),16):""}</div>
+      <dl class="facts">${fact("Artist",esc(a.artist))}${fact("Genre",esc(a.genre))}${fact("Tracks",esc(a.tracks))}${fact("Length",esc(a.length))}${fact("Rating",Number(a.rating)>0?a.rating+" / 5":"")}${fact("Favorite track",esc(a.favTrack))}${a.review?fact("Your notes",`<span style="white-space:pre-line">${esc(a.review)}</span>`,true):""}</dl>
+      ${a.coverId?"":`<p class="cover-note" style="text-align:left">No album art yet. Add it with Edit.</p>`}</div></div>
+    <div class="foot"><span class="err" id="err"></span><button class="btn ghost left" type="button" id="close">Close</button>
+      ${a.status!=="listened"?`<button class="btn" type="button" id="done">Mark as listened</button>`:""}
+      <button class="btn primary" type="button" id="edit" data-autofocus>${a.status==="listened"?"Edit & rate":"Edit & add album art"}</button></div>`);
+  ov.querySelector("#close").addEventListener("click",close);
+  ov.querySelector("#edit").addEventListener("click",()=>openAlbumEdit(getAlbum(id)));
+  if(!a.coverId) findCover("album",a).then(url=>{ if(!url) return; const sl=ov.querySelector(".sleeve.big"); if(sl){ sl.classList.add("has"); sl.innerHTML=`<img src="${esc(url)}" alt="">`; } const lb=ov.querySelector(".turntable .lbl"); if(lb) lb.style.backgroundImage=`url("${url}")`; const n=ov.querySelector(".cover-note"); if(n) n.textContent="Found automatically. Wrong cover? Paste a link in your sheet's Cover URL column, or upload one with Edit."; });
+  const dn=ov.querySelector("#done"); if(dn) dn.addEventListener("click",async()=>{ try{ await patchLayer("albums",id,luser,{status:"listened",listenedOn:new Date().toISOString().slice(0,10)}); openAlbumEdit(getAlbum(id)); }catch(_){ ov.querySelector("#err").textContent="Couldn't save. Check your connection and try again."; } });
+}
+function openAlbumEdit(a){
+  const isNew=!a; a=a?{...a}:{status:"queue"};
+  const base=a.fromSheet&&lcat.has(a.id)?lexpand(a.id,lcat.get(a.id)):null; const pending={};
+  const ov=modal(`<h2>${isNew?"Add an album":"Edit "+esc(a.title)}</h2>
+  ${a.fromSheet?`<p class="hint" style="margin:-8px 0 14px">From your Albums to Listen To tab. Changes here stay in the app and win over the sheet on future syncs.</p>`:""}
+  <form class="grid" novalidate onsubmit="return false">
+    <label class="f full">Album name<input id="f-title" value="${esc(a.title)}"></label>
+    <label class="f">Artist<input id="f-artist" value="${esc(a.artist)}"></label>
+    <label class="f">Status<select id="f-status"><option value="queue" ${a.status!=="listened"?"selected":""}>To listen</option><option value="listened" ${a.status==="listened"?"selected":""}>Listened</option></select></label>
+    <label class="f">Genre<input id="f-genre" value="${esc(a.genre)}" placeholder="Pop"></label>
+    <label class="f">Number of tracks<input id="f-tracks" inputmode="numeric" value="${esc(a.tracks)}"></label>
+    <label class="f">Length<input id="f-length" value="${esc(a.length)}" placeholder="44min"></label>
+    <label class="f">Favorite track<input id="f-favTrack" value="${esc(a.favTrack)}"></label>
+    <div class="full photos">${photoField("cover","Album art","Square works best. Shows on the sleeve and the record label.",a.coverId,"sq")}</div>
+    ${starField}
+    <label class="f full">Notes<textarea id="f-review" style="min-height:90px">${esc(a.review)}</textarea></label>
+  </form>
+  <div class="foot">${isNew?"":`<button class="btn danger left" type="button" id="del">${a.fromSheet?"Remove from app":"Delete"}</button>`}<span class="err" id="err"></span><button class="btn ghost" type="button" id="cancel">Cancel</button><button class="btn primary" type="button" id="save">Save</button></div>`);
+  const getRating=starInput(ov,a.rating); wirePhoto(ov,"cover",pending,false);
+  ov.querySelector("#cancel").addEventListener("click",close);
+  const del=ov.querySelector("#del");
+  if(del){ let armed=false; del.addEventListener("click",async()=>{ if(!armed){armed=true;del.textContent="Tap again to confirm";return;} try{ if(a.fromSheet) await patchLayer("albums",a.id,luser,{hidden:true}); else await db.collection("albums").doc(a.id).delete(); close(); }catch(_){ ov.querySelector("#err").textContent="Couldn't remove it. Try again."; } }); }
+  const save=ov.querySelector("#save");
+  save.addEventListener("click",async()=>{
+    const v=s=>ov.querySelector(s).value.trim(), err=ov.querySelector("#err");
+    const title=v("#f-title"); if(!title){err.textContent="Add the album name first.";return;}
+    const prev=luser.get(a.id)||{}; const status=v("#f-status");
+    const data={title,artist:v("#f-artist"),status,genre:v("#f-genre"),tracks:v("#f-tracks"),length:v("#f-length"),favTrack:v("#f-favTrack"),rating:getRating(),review:ov.querySelector("#f-review").value.trim(),
+      coverId:prev.coverId||a.coverId||undefined,listenedOn:status==="listened"?(a.listenedOn||new Date().toISOString().slice(0,10)):undefined};
+    save.disabled=true; save.textContent="Saving…";
+    try{ const cv=await uploadPending(pending,"cover",1200); if(cv) data.coverId=cv.id;
+      await saveLayer("albums",isNew?db.collection("albums").doc().id:a.id,data,base); close(); }
+    catch(e){ save.disabled=false; save.textContent="Save"; err.textContent=e&&e.code==="too_large"?"That photo is too big. Try a smaller one.":!db?"Saving isn't available in this view.":"Couldn't save. Check your connection and try again."; }
+  });
+}
+
+/* ================= bulk photo upload ================= */
+const STOP=new Set(["the","a","an","and","of","by","to","in","on","for","jpg","jpeg","png","webp","heic","copy","spine","cover","poster","album","art","front","img","image","photo","vhs","final","edited"]);
+const toks=s=>String(s||"").toLowerCase().normalize("NFKD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9\s]/g," ").split(/\s+/).filter(w=>w&&!STOP.has(w)&&!/^\d{1,2}$/.test(w));
+function cleanName(fn){ return String(fn).replace(/\.[a-z0-9]{2,5}$/i,"").replace(/[_]+/g," ").replace(/\(\d+\)|\bcopy\b/gi," ").trim(); }
+function matchScore(fileToks,fileKey,item,creator){
+  const t=nkey(item.title), tc=nkey(item.title+(creator||"")), ct=nkey((creator||"")+item.title);
+  if(!t) return 0;
+  if(fileKey===t||fileKey===tc||fileKey===ct) return 1;
+  let best=0;
+  if(t.length>=4&&fileKey.includes(t)) best=0.82+0.15*(t.length/fileKey.length);
+  const it=new Set(toks(item.title)), ic=new Set(toks(creator)); const ft=new Set(fileToks);
+  if(it.size){ let hit=0; it.forEach(w=>{if(ft.has(w))hit++;}); let extra=0; ft.forEach(w=>{ if(!it.has(w)&&!ic.has(w)) extra++; });
+    const j=hit/(it.size+extra); best=Math.max(best,j*0.9); }
+  return Math.min(1,best);
+}
+const BULK={
+  books:{label:"books",kinds:[["cover","Covers"]],items:()=>books(),creator:b=>b.author,
+    save:(id,kind,up)=>patchUser(id,kind==="spine"?{spineId:up.id,spineRatio:up.ratio}:{coverId:up.id})},
+  watch:{label:"titles",kinds:[["poster","Posters"]],items:()=>watchItems(),creator:()=>"",
+    save:(id,kind,up)=>patchLayer("watch",id,wuser,kind==="spine"?{spineId:up.id,spineRatio:up.ratio}:{posterId:up.id})},
+  listen:{label:"albums",kinds:[["cover","Album covers"]],items:()=>albumItems(),creator:a=>a.artist,
+    save:(id,kind,up)=>patchLayer("albums",id,luser,{coverId:up.id})}
+};
+function openBulk(room){
+  const cfg=BULK[room];
+  if(!assets||!db){ const o=modal(`<h2>Add photos in bulk</h2><p class="sub">Photo uploads need the app opened from its claude.ai link, signed in as its owner.</p><div class="foot"><button class="btn primary" type="button" id="x">Close</button></div>`); o.querySelector("#x").addEventListener("click",close); return; }
+  const ov=modal(`<h2>Add photos in bulk</h2>
+    <p class="sub">Name each photo after its title${room==="listen"?" (add \" - Artist\" if two albums share a name)":room==="books"?" (add \" - Author\" if two books share a title)":""}. The app matches them up, and you check the matches before anything is saved.</p>
+    <div class="grid" style="margin-top:14px">
+      <label class="f">These photos are<select id="b-kind">${cfg.kinds.map(([k,l])=>`<option value="${k}">${l}</option>`).join("")}</select></label>
+      <label class="f">Choose photos<input type="file" id="b-files" accept="image/*" multiple></label>
+      <label class="toggle full"><input type="checkbox" id="b-keep" checked> Skip ${cfg.label} that already have this kind of photo</label>
+    </div>
+    <div id="b-list"></div>
+    <div class="progress" id="pg" hidden><span></span></div><p class="sub" id="pgt"></p>
+    <div class="foot"><span class="err" id="err"></span><button class="btn ghost" type="button" id="cancel">Close</button><button class="btn primary" type="button" id="go" disabled>Add photos</button></div>`);
+  const $=s=>ov.querySelector(s); let rows=[];
+  const field=k=>k==="spine"?"spineId":(room==="watch"?"posterId":"coverId");
+  function build(){
+    const files=[...$("#b-files").files]; if(!files.length){ $("#b-list").innerHTML=""; $("#go").disabled=true; return; }
+    const items=cfg.items(), kind=$("#b-kind").value, skipHave=$("#b-keep").checked, f=field(kind);
+    const pool=items.filter(x=>!skipHave||!x[f]);
+    const used=new Set();
+    rows=files.map(file=>{
+      const name=cleanName(file.name), fk=nkey(name), ft=toks(name);
+      const scored=pool.map(x=>({x,s:matchScore(ft,fk,x,cfg.creator(x))})).filter(o=>o.s>=0.34).sort((a,b)=>b.s-a.s||(a.x.row??1e9)-(b.x.row??1e9)).slice(0,6);
+      return {file,name,scored,pick:scored.length&&scored[0].s>=0.6?scored[0].x.id:""};
+    });
+    rows.forEach(r=>{ if(r.pick&&used.has(r.pick)) r.pick=""; else if(r.pick) used.add(r.pick); });
+    const matched=rows.filter(r=>r.pick).length;
+    $("#b-list").innerHTML=`<p class="hat">${matched} of ${files.length} photos matched. ${files.length-matched?"Pick a title for the rest, or leave them as Don't add.":""}</p>
+      <div class="bulk">${rows.map((r,i)=>{ const top=r.scored[0]; const sure=top&&top.s>=0.85&&r.pick===top.x.id;
+        return `<div class="brow"><span class="bthumb" id="bt-${i}"></span><div style="min-width:0"><span class="ti">${esc(r.file.name)}</span>
+        <select class="sel" data-row="${i}" aria-label="Title for ${esc(r.file.name)}"><option value="">Don't add</option>${r.scored.map(o=>`<option value="${esc(o.x.id)}" ${r.pick===o.x.id?"selected":""}>${esc(o.x.title)}${cfg.creator(o.x)?" · "+esc(cfg.creator(o.x)):""}</option>`).join("")}</select></div>
+        <span class="pill ${sure?"read":r.pick?"reading":""}">${sure?"Matched":r.pick?"Check":"No match"}</span></div>`; }).join("")}</div>`;
+    $("#b-list").querySelectorAll("select[data-row]").forEach(s=>s.addEventListener("change",()=>{ rows[+s.dataset.row].pick=s.value; $("#go").disabled=!rows.some(r=>r.pick); $("#go").textContent=`Add ${rows.filter(r=>r.pick).length} photos`; }));
+    rows.forEach((r,i)=>{ const u=URL.createObjectURL(r.file); const el=$("#bt-"+i); if(el) el.innerHTML=`<img src="${u}" alt="">`; });
+    $("#go").disabled=!matched; $("#go").textContent=`Add ${matched} photos`;
+  }
+  $("#b-files").addEventListener("change",build); $("#b-kind").addEventListener("change",build); $("#b-keep").addEventListener("change",build);
+  $("#cancel").addEventListener("click",close);
+  $("#go").addEventListener("click",async()=>{
+    const todo=rows.filter(r=>r.pick); if(!todo.length) return; const kind=$("#b-kind").value;
+    const go=$("#go"); go.disabled=true; $("#pg").hidden=false; const bar=$("#pg span"), txt=$("#pgt"); let ok=0, failed=[];
+    for(let i=0;i<todo.length;i++){
+      const r=todo[i]; txt.textContent=`Adding ${i+1} of ${todo.length}: ${r.file.name}`;
+      try{
+        let rot=0; if(kind==="spine"){ try{ const b=await createImageBitmap(r.file); rot=b.width>b.height?90:0; }catch(_){} }
+        const p=await prepImage(r.file,rot,kind==="spine"?1600:1400);
+        const up=await withRetry(()=>assets.upload(p.blob,{type:"image/jpeg"}));
+        await cfg.save(r.pick,kind,{id:up.id,ratio:Number(p.ratio.toFixed(4))}); ok++;
+      }catch(e){ failed.push(r.file.name); if(e&&e.code==="quota_or_state"){ txt.textContent="Your photo storage is full."; break; } }
+      bar.style.width=Math.round((i+1)/todo.length*100)+"%";
+    }
+    txt.textContent=`Added ${ok} photo${ok===1?"":"s"}.${failed.length?` Couldn't add: ${failed.join(", ")}.`:""}`;
+    go.textContent="Done";
+  });
+}
+
+/* ================= shared random picker (Press Play / Drop the needle) ================= */
+const recentRoom=[];
+function openRoomPicker(kind){
+  const w=kind==="watch";
+  const all=w?watchItems().filter(m=>m.status!=="seen"):albumItems().filter(a=>a.status!=="listened");
+  const genres=[...new Set(all.flatMap(x=>w?String(x.genre).split(",").map(s=>s.trim()):[firstGenre(x.genre)]).filter(Boolean))].sort();
+  const wheres=w?[...new Set(all.map(m=>m.where).filter(Boolean))].sort():[];
+  const artists=w?[]:[...new Set(all.map(a=>a.artist).filter(Boolean))].sort();
+  const reduce=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const ov=modal(`<h2>${w?"Press Play":"Drop the needle"}</h2>
+    <div class="picker-filters">
+      ${w?`<label class="f">Movie or show<select id="p-type"><option value="">Either</option><option value="movie">Movies</option><option value="show">Shows</option></select></label>`:`<label class="f">Artist<input id="p-artist" list="dl-art" placeholder="Any artist"><datalist id="dl-art">${artists.map(x=>`<option value="${esc(x)}">`).join("")}</datalist></label>`}
+      <label class="f">Genre<select id="p-genre"><option value="">Any genre</option>${genres.map(g=>`<option>${esc(g)}</option>`).join("")}</select></label>
+      ${w?`<label class="f">Where to watch<select id="p-where"><option value="">Any service</option>${wheres.map(g=>`<option>${esc(g)}</option>`).join("")}</select></label>`:`<label class="f">Max length (minutes)<input id="p-max" inputmode="numeric" placeholder="No limit"></label>`}
+    </div>
+    <p class="hat" id="hat"></p>
+    <div class="stage ${w?"stage-vhs":"stage-lp"}" id="stage" aria-hidden="true"></div><div class="stage-ledge"></div>
+    <div id="result" aria-live="polite"></div>
+    <div class="foot"><span class="err" id="err"></span><button class="btn ghost" type="button" id="cancel">Close</button><button class="btn primary" type="button" id="go" data-autofocus>${w?"Pull a tape":"Pull a record"}</button></div>`);
+  const $=s=>ov.querySelector(s); let pool=[], spinning=false;
+  const mins=s=>{ const t=String(s||"").toLowerCase(); const h=/(\d+)\s*h/.exec(t), m=/(\d+)\s*m/.exec(t); return (h?+h[1]*60:0)+(m?+m[1]:0); };
+  function compute(){
+    const g=$("#p-genre").value;
+    if(w){ const ty=$("#p-type").value, wh=$("#p-where").value;
+      pool=all.filter(m=>(!g||norm(m.genre).includes(norm(g)))&&(!wh||m.where===wh)&&(!ty||(ty==="show")===/show|series/i.test(m.type)));
+    }else{ const ar=norm($("#p-artist").value), mx=parseInt($("#p-max").value,10);
+      pool=all.filter(a=>(!g||firstGenre(a.genre)===g)&&(!ar||norm(a.artist).includes(ar))&&(!mx||!mins(a.length)||mins(a.length)<=mx)); }
+    $("#hat").textContent=pool.length?`${pool.length.toLocaleString()} ${w?"titles":"albums"} to pick from`:"Nothing matches these choices. Loosen a filter.";
+    $("#go").disabled=!pool.length; draw();
+  }
+  const shuffle=arr=>{const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+  function draw(winner){
+    const n=w?(window.innerWidth<640?9:15):(window.innerWidth<640?3:6);
+    const row=shuffle(pool.filter(x=>!winner||x.id!==winner.id)).slice(0,winner?n-1:n);
+    if(winner) row.splice(Math.floor(row.length/2),0,winner);
+    $("#stage").innerHTML=row.length?row.map(w?tapeHTML:recordHTML).join(""):`<p class="stage-empty">Nothing here for this mix.</p>`;
+    return [...$("#stage").querySelectorAll(w?"[data-wopen]":"[data-lopen]")];
+  }
+  async function pull(){
+    if(spinning||!pool.length) return; spinning=true; $("#go").disabled=true; $("#result").innerHTML="";
+    let ch=pool.filter(x=>!recentRoom.includes(x.id)); if(!ch.length) ch=pool;
+    const win=ch[Math.floor(Math.random()*ch.length)]; recentRoom.push(win.id); if(recentRoom.length>12) recentRoom.shift();
+    const els=draw(win); const wi=els.findIndex(el=>(el.dataset.wopen||el.dataset.lopen)===win.id);
+    if(!reduce){ let d=50; const total=17+Math.floor(Math.random()*5); for(let s=0;s<total;s++){ els.forEach(e=>e.classList.remove("lit")); els[s===total-1?wi:Math.floor(Math.random()*els.length)].classList.add("lit"); await sleep(d); d*=1.08; } }
+    els.forEach((e,k)=>{e.classList.remove("lit");e.classList.add(k===wi?"pulled":"dim");});
+    await sleep(reduce?0:500); result(win); spinning=false; $("#go").disabled=false; $("#go").textContent=w?"Pull another tape":"Pull another record";
+  }
+  function result(x){
+    if(w){
+      $("#result").innerHTML=`<div class="pick" style="--c:${watchColor(x.genre)}"><div class="poster">${posterHTML(x)}</div><div>
+        <span class="eyebrow">Tonight's feature</span><h3>${esc(x.title)}</h3><p class="line">${esc([x.type,x.year,x.runtime].filter(Boolean).join(" · "))}</p>
+        <p class="line">${esc([x.genre,x.where].filter(Boolean).join(" · "))}</p><p class="syn">${esc(x.description||"")}</p>
+        <div class="row" style="margin-top:12px"><button class="btn primary small" type="button" id="p-start">${/show|series/i.test(x.type)?"Start watching":"Watch it"}</button><button class="btn small" type="button" id="p-open">See full details</button></div></div></div>`;
+    }else{
+      $("#result").innerHTML=`<div class="pick" style="--c:${musicColor(x.genre)}"><div class="sqcover" style="--g:${musicColor(x.genre)}">${sleeveHTML(x)}</div><div>
+        <span class="eyebrow">Now spinning</span><h3>${esc(x.title)}</h3><p class="line">${esc(x.artist)}</p>
+        <p class="line">${esc([x.genre,x.tracks?x.tracks+" tracks":"",x.length].filter(Boolean).join(" · "))}</p>
+        <div class="row" style="margin-top:12px"><button class="btn primary small" type="button" id="p-start">Mark as listened</button><button class="btn small" type="button" id="p-open">See details</button></div></div></div>`;
+    }
+    $("#p-open").addEventListener("click",()=>w?openWatchDetail(x.id):openAlbumDetail(x.id));
+    $("#p-start").addEventListener("click",async()=>{ try{
+        if(w) await patchLayer("watch",x.id,wuser,{status:"watching"}); else await patchLayer("albums",x.id,luser,{status:"listened",listenedOn:new Date().toISOString().slice(0,10)});
+        $("#p-start").textContent=w?"Added to Watching":"Marked"; $("#p-start").disabled=true;
+      }catch(_){ $("#err").textContent=db?"Couldn't save. Check your connection and try again.":"Saving isn't available in this view."; } });
+  }
+  ov.querySelectorAll("select").forEach(s=>s.addEventListener("change",compute));
+  ov.querySelectorAll(".picker-filters input").forEach(s=>s.addEventListener("input",compute));
+  $("#go").addEventListener("click",pull); $("#cancel").addEventListener("click",close); compute();
+}
+
+/* ================= PLATFORM: Supabase account, data, photos, sheet reading ================= */
+const SB_URL = window.GL_CONFIG.supabaseUrl;
+const sb = window.supabase.createClient(SB_URL, window.GL_CONFIG.supabaseKey);
+let UID = null, EMAIL = "", SETTINGS = {};
+const synMap = new Map();
+const autoCovers = new Map();
+const KIND = {books:"book", watch:"watch", albums:"album"};
+const DEFAULT_SHELVES = [
+  ["mm-romance","MM Romance","genre","MM Romance","#9B1B2F",1],["mm-sports","MM Sports Romance","genre","MM Sports Romance","#14469F",2],
+  ["young-adult","Young Adult","genre","Young Adult","#5E7E1E",3],["found-family","Found Family","trope","Found Family","#6B2C91",4],
+  ["slow-burn","Slow Burn","burn","Slow Burn","#00796B",5],["fiction","Fiction","genre","Fiction","#8B7907",6],
+  ["mm-college","MM College Romance","genre","MM College Romance","#AF790E",7],["mm-cowboy","MM Cowboy Romance","genre","MM Cowboy Romance","#894910",8],
+  ["mm-work","MM Workplace Romance","genre","MM Workplace Romance","#00796B",9],["mm-dark","MM Dark Romance","genre","MM Dark Romance","#5E0A1A",10],
+  ["mm-fantasy","MM Fantasy Romance","genre","MM Fantasy Romance","#6B2C91",11],["mm-holiday","MM Holiday Romance","genre","MM Holiday Romance","#0A8047",12]
+];
+const SHEET_TABS = [
+  ["tbr","TBR List","Your books to read"],
+  ["tbw","TBW List","Movies and shows to watch"],
+  ["showReviews","Show Rating & Reviews","Your movie and show ratings"],
+  ["albums","Albums to Listen To","Albums to listen to"],
+  ["musicReviews","Music Rating & Reviews","Your album ratings"]
+];
+
+function uniqueId(seen,base){ const n=(seen.get(base)||0)+1; seen.set(base,n); return n>1?base+"-"+n:base; }
+const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+function markDirty(){ allDirty = true; wDirty = true; lDirty = true; }
+let renderTimer = null;
+function soon(){ markDirty(); clearTimeout(renderTimer); renderTimer = setTimeout(render, 60); }
+function mapFor(name){ return name === "books" ? userDocs : name === "watch" ? wuser : luser; }
+
+/* A small stand-in for the old document store, backed by Supabase tables */
+function makeDb(){
+  return { collection(name){ return { doc(id){
+    const did = id || newId();
+    return {
+      id: did,
+      async set(data){
+        const now = new Date().toISOString();
+        if(name === "shelves"){
+          const { error } = await sb.from("shelves").upsert({ user_id: UID, id: did, data, updated_at: now });
+          if(error) throw error;
+          shelves = [...shelves.filter(s => s.id !== did), { id: did, ...data }];
+        } else {
+          const { error } = await sb.from("items").upsert({ user_id: UID, kind: KIND[name], item_id: did, data, updated_at: now });
+          if(error) throw error;
+          mapFor(name).set(did, data);
+        }
+        soon();
+      },
+      async delete(){
+        if(name === "shelves"){
+          const { error } = await sb.from("shelves").delete().eq("user_id", UID).eq("id", did);
+          if(error) throw error;
+          shelves = shelves.filter(s => s.id !== did);
+        } else {
+          const { error } = await sb.from("items").delete().eq("user_id", UID).eq("kind", KIND[name]).eq("item_id", did);
+          if(error) throw error;
+          mapFor(name).delete(did);
+        }
+        soon();
+      }
+    };
+  } }; } };
+}
+const photoURL = path => `${SB_URL}/storage/v1/object/public/photos/${path}`;
+const ASSETS = {
+  async upload(blobData){
+    const path = `${UID}/${newId()}.jpg`;
+    const { error } = await sb.storage.from("photos").upload(path, blobData, { contentType: "image/jpeg", upsert: false });
+    if(error){ if(/size|large/i.test(error.message || "")) throw { code: "too_large" }; throw error; }
+    return { id: path, url: photoURL(path) };
+  }
+};
+
+async function selectAll(table){
+  const out = []; let from = 0;
+  while(true){
+    const { data, error } = await sb.from(table).select("*").eq("user_id", UID).range(from, from + 999);
+    if(error) throw error;
+    out.push(...data);
+    if(data.length < 1000) break;
+    from += 1000;
+  }
+  return out;
+}
+async function loadUserData(){
+  const [items, shelfRows, settingRows, coverRows] = await Promise.all([selectAll("items"), selectAll("shelves"), selectAll("settings"), selectAll("covers")]);
+  userDocs.clear(); wuser.clear(); luser.clear();
+  for(const r of items){ (r.kind === "book" ? userDocs : r.kind === "watch" ? wuser : luser).set(r.item_id, r.data || {}); }
+  shelves = shelfRows.map(r => ({ id: r.id, ...(r.data || {}) }));
+  SETTINGS = (settingRows[0] && settingRows[0].data) || {};
+  for(const r of coverRows) autoCovers.set(r.kind + ":" + r.item_id, r.url || "");
+  if(!shelfRows.length && !SETTINGS.shelvesSeeded){
+    const now = new Date().toISOString();
+    const rows = DEFAULT_SHELVES.map(([id, name, type, value, color, order]) => ({ user_id: UID, id, data: { name, type, value, color, order }, updated_at: now }));
+    const { error } = await sb.from("shelves").upsert(rows);
+    if(!error) shelves = rows.map(r => ({ id: r.id, ...r.data }));
+    await saveSettings({ ...SETTINGS, shelvesSeeded: true });
+  }
+  markDirty();
+}
+async function saveSettings(data){
+  const { error } = await sb.from("settings").upsert({ user_id: UID, data, updated_at: new Date().toISOString() });
+  if(error) throw error;
+  SETTINGS = data;
+}
+
+/* ---------- reading the published sheet (CSV) ---------- */
+function parseCSV(text){
+  const rows = []; let row = [], field = "", i = 0, q = false;
+  while(i < text.length){
+    const ch = text[i];
+    if(q){
+      if(ch === '"'){ if(text[i + 1] === '"'){ field += '"'; i += 2; continue; } q = false; i++; continue; }
+      field += ch; i++; continue;
+    }
+    if(ch === '"'){ q = true; i++; continue; }
+    if(ch === ","){ row.push(field); field = ""; i++; continue; }
+    if(ch === "\r"){ i++; continue; }
+    if(ch === "\n"){ row.push(field); rows.push(row); row = []; field = ""; i++; continue; }
+    field += ch; i++;
+  }
+  if(field !== "" || row.length){ row.push(field); rows.push(row); }
+  return rows;
+}
+function colsFrom(header, spec){
+  const head = header.map(h => String(h || "").trim().toLowerCase());
+  const idx = {}; for(const [k, re] of Object.entries(spec)) idx[k] = head.findIndex(h => re.test(h));
+  return (r, k) => idx[k] >= 0 ? (r[idx[k]] ?? "") : "";
+}
+async function fetchTab(key){
+  const url = (SETTINGS.sheets || {})[key];
+  if(!url) return null;
+  const res = await fetch(url, { cache: "no-store" });
+  if(!res.ok) throw new Error("http " + res.status);
+  const text = await res.text();
+  if(/^\s*</.test(text)) throw new Error("not csv");
+  const rows = parseCSV(text);
+  return { header: rows[0] || [], rows: rows.slice(1).map((r, i) => ({ r, row: i + 2 })) };
+}
+const isTrue = v => String(v).trim().toUpperCase() === "TRUE";
+function buildBooks(tab){
+  const col = colsFrom(tab.header, {read:/^read/,title:/^title/,author:/^author/,cover:/cover url|^cover$/,pages:/page/,pub:/publication/,pov:/^pov/,series:/^series$/,count:/how many/,sname:/name of series/,genre:/^genre/,tropes:/trope/,ending:/hea|hfn/,burn:/burn/,syn:/synopsis/});
+  const seen = new Map(), cat = new Map(); synMap.clear();
+  for(const { r, row } of tab.rows){
+    const title = clean(col(r, "title")); if(!title) continue;
+    const author = clean(col(r, "author"));
+    let id = slug(title) + "--" + slug(author).slice(0, 40);
+    const n = (seen.get(id) || 0) + 1; seen.set(id, n); if(n > 1) id += "-" + n;
+    const pages = parseInt(String(col(r, "pages")).replace(/[^\d]/g, ""), 10) || null;
+    const inSeries = /^y/i.test(String(col(r, "series")));
+    const cv = String(col(r, "cover")).trim();
+    cat.set(id, { t: title, a: author, p: pages, d: clean(col(r, "pub")), v: clean(col(r, "pov")), s: inSeries ? clean(col(r, "count")) : "", n: inSeries ? clean(col(r, "sname")) : "", g: clean(col(r, "genre")), tr: splitList(col(r, "tropes")), e: clean(col(r, "ending")), b: clean(col(r, "burn")), r: isTrue(col(r, "read")), cv: /^https?:\/\//i.test(cv) ? cv : "", row });
+    const syn = String(col(r, "syn")).trim(); if(syn) synMap.set(id, syn);
+  }
+  return cat;
+}
+function buildWatch(tbw, rev){
+  const reviews = new Map();
+  if(rev){
+    const R = colsFrom(rev.header, {title:/^title/,on:/watched on/,fin:/finished/,rating:/^rating/,rewatch:/rewatch/,review:/review|notes/});
+    rev.rows.forEach(({ r }) => { const t = clean(R(r, "title")); if(t) reviews.set(nkey(t), { t, rv: { on: clean(R(r, "on")), fin: clean(R(r, "fin")), r: parseFloat(R(r, "rating")) || 0, rw: clean(R(r, "rewatch")), txt: String(R(r, "review")).trim() } }); });
+  }
+  const seen = new Map(), cat = new Map();
+  if(tbw){
+    const W = colsFrom(tbw.header, {seen:/^seen/,title:/^title/,poster:/poster url|^poster$/,type:/^type/,genre:/^genre/,year:/year/,runtime:/runtime/,where:/where/,status:/^status/,desc:/description/});
+    tbw.rows.forEach(({ r, row }) => {
+      const t = clean(W(r, "title")); if(!t) return; const y = clean(W(r, "year")), ww = clean(W(r, "where")), pv = String(W(r, "poster")).trim();
+      const id = uniqueId(seen, "w-" + slug(t) + (y ? "-" + slug(y).slice(0, 12) : ""));
+      const c = { t, ty: clean(W(r, "type")), g: clean(W(r, "genre")), y, rt: clean(W(r, "runtime")), ww: ww === "Unknown/TBD" ? "" : ww, st: clean(W(r, "status")), ds: String(W(r, "desc")).trim(), seen: isTrue(W(r, "seen")), pv: /^https?:\/\//i.test(pv) ? pv : "", row };
+      const m = reviews.get(nkey(t)); if(m){ c.rv = m.rv; c.seen = true; reviews.delete(nkey(t)); }
+      cat.set(id, c);
+    });
+  }
+  let extra = 100000; for(const m of reviews.values()) cat.set(uniqueId(seen, "w-" + slug(m.t)), { t: m.t, seen: true, rv: m.rv, row: extra++ });
+  return cat;
+}
+function buildAlbums(alb, rev){
+  const reviews = new Map();
+  if(rev){
+    const R = colsFrom(rev.header, {title:/^title|^album/,artist:/^artist/,genre:/^genre/,rating:/^rating/,fav:/favorite/});
+    rev.rows.forEach(({ r }) => { const t = clean(R(r, "title")); if(t) reviews.set(nkey(t) + "|" + nkey(R(r, "artist")), { t, a: clean(R(r, "artist")), g: clean(R(r, "genre")), r: parseFloat(R(r, "rating")) || 0, fav: clean(R(r, "fav")) }); });
+  }
+  const seen = new Map(), cat = new Map();
+  if(alb){
+    const L = colsFrom(alb.header, {done:/^listened/,title:/^album|^title/,artist:/^artist/,cover:/cover url|^cover$/,tracks:/track/,length:/length|time/,genre:/^genre/,rating:/^rating/,fav:/favorite/});
+    alb.rows.forEach(({ r, row }) => {
+      const t = clean(L(r, "title")); if(!t) return; const a = clean(L(r, "artist")), cv = String(L(r, "cover")).trim();
+      const c = { t, a, n: clean(L(r, "tracks")), len: clean(L(r, "length")), g: clean(L(r, "genre")), r: parseFloat(L(r, "rating")) || 0, fav: clean(L(r, "fav")), done: isTrue(L(r, "done")), cv: /^https?:\/\//i.test(cv) ? cv : "", row };
+      const k = nkey(t) + "|" + nkey(a), m = reviews.get(k); if(m){ c.done = true; if(m.r) c.r = m.r; if(m.fav) c.fav = m.fav; if(!c.g) c.g = m.g; reviews.delete(k); }
+      cat.set(uniqueId(seen, "a-" + slug(t) + "--" + slug(a).slice(0, 30)), c);
+    });
+  }
+  let extra = 100000; for(const m of reviews.values()) cat.set(uniqueId(seen, "a-" + slug(m.t) + "--" + slug(m.a).slice(0, 30)), { t: m.t, a: m.a, g: m.g, r: m.r, fav: m.fav, done: true, row: extra++ });
+  return cat;
+}
+let sheetErrors = [], lastSheetLoad = 0;
+async function loadSheets(){
+  setSync("Reading your sheet…");
+  sheetErrors = [];
+  const keys = SHEET_TABS.map(t => t[0]);
+  const results = await Promise.allSettled(keys.map(fetchTab));
+  const got = {};
+  results.forEach((res, i) => { if(res.status === "fulfilled") got[keys[i]] = res.value; else sheetErrors.push(SHEET_TABS[i][1]); });
+  if(got.tbr) catalog = buildBooks(got.tbr); else if(!(SETTINGS.sheets || {}).tbr) catalog = new Map();
+  if(got.tbw || got.showReviews) wcat = buildWatch(got.tbw, got.showReviews);
+  if(got.albums || got.musicReviews) lcat = buildAlbums(got.albums, got.musicReviews);
+  const stamp = { syncedAt: new Date().toISOString() };
+  meta = wmeta = lmeta = stamp;
+  catalogLoaded = wLoaded = lLoaded = true;
+  lastSheetLoad = Date.now();
+  setSync(sheetErrors.length ? "Couldn't read: " + sheetErrors.join(", ") : "Up to date");
+  soon();
+}
+async function refreshSheets(){ await loadSheets(); toast(sheetErrors.length ? "Some tabs couldn't be read. Check their links in Settings." : "Your sheet is up to date."); }
+function toast(text){
+  let t = document.getElementById("toast");
+  if(!t){ t = document.createElement("div"); t.id = "toast"; t.className = "toast"; t.setAttribute("role", "status"); document.body.appendChild(t); }
+  t.textContent = text; t.classList.add("show"); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("show"), 3200);
+}
+
+/* ---------- automatic covers ---------- */
+const sameTitle = (a, b) => { const x = nkey(a).replace(/^the/, ""), y = nkey(b).replace(/^the/, ""); return x && y && (x === y || x.startsWith(y) || y.startsWith(x)); };
+async function gbooksCover(title, author){
+  const q = `intitle:${title}` + (author ? ` inauthor:${author.split("&")[0].trim()}` : "");
+  const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&maxResults=5&printType=books`);
+  if(res.status === 429) throw new Error("busy");
+  if(!res.ok) return "";
+  const j = await res.json();
+  for(const v of (j.items || [])){
+    const vi = v.volumeInfo || {}; const img = vi.imageLinks && (vi.imageLinks.thumbnail || vi.imageLinks.smallThumbnail);
+    if(img && sameTitle(vi.title || "", title)) return img.replace(/^http:/, "https:").replace("&edge=curl", "");
+  }
+  return "";
+}
+async function olibCover(title, author){
+  const res = await fetch(`https://openlibrary.org/search.json?title=${encodeURIComponent(title)}${author ? "&author=" + encodeURIComponent(author.split("&")[0].trim()) : ""}&limit=5&fields=title,cover_i`);
+  if(!res.ok) return "";
+  const j = await res.json();
+  const d = (j.docs || []).find(x => x.cover_i && sameTitle(x.title || "", title));
+  return d ? `https://covers.openlibrary.org/b/id/${d.cover_i}-L.jpg` : "";
+}
+async function itunesCover(title, artist){
+  const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent((artist ? artist + " " : "") + title)}&entity=album&limit=8`);
+  if(!res.ok) return "";
+  const j = await res.json();
+  const hit = (j.results || []).find(x => sameTitle(x.collectionName || "", title)) || null;
+  return hit && hit.artworkUrl100 ? hit.artworkUrl100.replace("100x100bb", "600x600bb") : "";
+}
+const coverInFlight = new Map();
+async function findCover(kind, x){
+  const key = kind + ":" + x.id;
+  if(autoCovers.has(key)) return autoCovers.get(key);
+  if(coverInFlight.has(key)) return coverInFlight.get(key);
+  const p = (async () => {
+    let url = "";
+    try{
+      if(kind === "book"){ url = await gbooksCover(x.title, x.author); if(!url) url = await olibCover(x.title, x.author); }
+      else if(kind === "album"){ url = await itunesCover(x.title, x.artist); }
+      else return "";
+    }catch(_){ return null; }
+    autoCovers.set(key, url);
+    sb.from("covers").upsert({ user_id: UID, kind, item_id: x.id, url, checked_at: new Date().toISOString() }).then(() => {});
+    markDirty();
+    return url;
+  })();
+  coverInFlight.set(key, p);
+  try{ return await p; } finally { coverInFlight.delete(key); }
+}
+const coverQueue = []; let coverBusy = false, coverRenderTimer = null;
+function queueCovers(kind, list){
+  for(const x of list){ const key = kind + ":" + x.id; if(!x.coverId && !autoCovers.has(key) && !coverQueue.some(q => q.key === key)) coverQueue.push({ key, kind, x }); }
+  runCoverQueue();
+}
+async function runCoverQueue(){
+  if(coverBusy) return; coverBusy = true;
+  while(coverQueue.length){
+    const { kind, x } = coverQueue.shift();
+    const url = await findCover(kind, x);
+    if(url === null){ await sleep(4000); continue; }
+    if(url){ clearTimeout(coverRenderTimer); coverRenderTimer = setTimeout(() => { if(!document.getElementById("ov")) render(); }, 700); }
+    await sleep(350);
+  }
+  coverBusy = false;
+}
+function applyAuto(kind, x){
+  if(!x.coverId && kind !== "watch"){ const a = autoCovers.get(kind + ":" + x.id); if(a) x.coverId = a; }
+  return x;
+}
+
+/* ---------- account screens ---------- */
+function showAuth(message){
+  document.body.dataset.room = "auth";
+  document.getElementById("tabs").innerHTML = "";
+  main.innerHTML = `<section class="auth">
+    <h1>Welcome to the library</h1>
+    <p class="sub">Sign in to see your shelves on any device.</p>
+    <form id="authForm" class="grid" novalidate>
+      <label class="f full">Email<input id="a-email" type="email" autocomplete="email" required></label>
+      <label class="f full">Password<input id="a-pass" type="password" autocomplete="current-password" minlength="6" required></label>
+      <div class="full row"><button class="btn primary" type="submit" id="a-in">Sign in</button><button class="btn" type="button" id="a-up">Create account</button></div>
+      <p class="err full" id="a-err">${esc(message || "")}</p>
+    </form></section>`;
+  setSync("");
+  const $ = s => document.getElementById(s);
+  const creds = () => ({ email: $("a-email").value.trim(), password: $("a-pass").value });
+  $("authForm").addEventListener("submit", async e => {
+    e.preventDefault(); $("a-err").textContent = "";
+    const { error } = await sb.auth.signInWithPassword(creds());
+    if(error) $("a-err").textContent = /confirm/i.test(error.message) ? "Confirm your email first, using the link Supabase sent you." : "That email and password didn't match. Try again.";
+  });
+  $("a-up").addEventListener("click", async () => {
+    $("a-err").textContent = "";
+    const c = creds();
+    if(!c.email || c.password.length < 6){ $("a-err").textContent = "Enter your email and a password of at least 6 characters."; return; }
+    const { data, error } = await sb.auth.signUp({ ...c, options: { emailRedirectTo: location.origin + location.pathname } });
+    if(error){ $("a-err").textContent = error.message; return; }
+    if(!data.session) $("a-err").textContent = "Check your email for a link to confirm your account, then come back and sign in.";
+  });
+}
+function renderSettings(){
+  const s = SETTINGS.sheets || {};
+  return `<div class="view-head"><h1>Settings</h1></div>
+  <section class="settings">
+    <h2>Your sheet</h2>
+    <p class="sub">In Google Sheets, open <b>File → Share → Publish to web</b>. Under <b>Link</b>, pick one tab, choose <b>Comma-separated values (.csv)</b>, click <b>Publish</b>, and copy the link. Do that once for each tab below. Leave a box empty if you don't track that list.</p>
+    <form id="sheetForm" class="grid" novalidate>
+      ${SHEET_TABS.map(([k, tab, help]) => `<label class="f full">${esc(tab)} <span class="hint">${esc(help)}</span><input id="s-${k}" type="url" placeholder="https://docs.google.com/spreadsheets/d/e/…/pub?gid=…&output=csv" value="${esc(s[k] || "")}"></label>`).join("")}
+      <div class="full row"><button class="btn primary" type="submit">Save links</button><button class="btn" type="button" data-import>Refresh from sheet</button></div>
+      <p class="err full" id="s-err">${sheetErrors.length ? "Couldn't read: " + esc(sheetErrors.join(", ")) + ". Check those links are published as CSV." : ""}</p>
+    </form>
+    <h2>Account</h2>
+    <p class="sub">Signed in as <b>${esc(EMAIL)}</b></p>
+    <div class="row"><button class="btn" type="button" id="signOut">Sign out</button></div>
+  </section>`;
+}
+function wireSettings(){
+  const f = document.getElementById("sheetForm"); if(!f) return;
+  f.addEventListener("submit", async e => {
+    e.preventDefault();
+    const sheets = {};
+    for(const [k] of SHEET_TABS){
+      let v = document.getElementById("s-" + k).value.trim();
+      if(v && /\/pubhtml/.test(v)) v = v.replace("/pubhtml", "/pub").replace(/([?&])output=\w+/, "") + (v.includes("?") ? "&" : "?") + "output=csv";
+      sheets[k] = v;
+    }
+    try{ await saveSettings({ ...SETTINGS, sheets }); toast("Links saved."); await loadSheets(); }
+    catch(_){ document.getElementById("s-err").textContent = "Couldn't save. Check your connection and try again."; }
+  });
+  document.getElementById("signOut").addEventListener("click", async () => { await sb.auth.signOut(); location.hash = ""; location.reload(); });
+}
+
+/* ---------- start-up ---------- */
+let started = false;
+async function start(session){
+  if(started) return; started = true;
+  UID = session.user.id; EMAIL = session.user.email || "";
+  db = makeDb(); assets = ASSETS;
+  setSync("Opening your library…");
+  try{ await loadUserData(); }
+  catch(e){ setSync("Couldn't reach your library"); main.innerHTML = `<div class="empty"><h2>Couldn't open your library</h2><p>Check your connection and reload the page.</p></div>`; return; }
+  userLoaded = true;
+  await loadSheets();
+  if(!(SETTINGS.sheets && Object.values(SETTINGS.sheets).some(Boolean)) && !location.hash) location.hash = "settings";
+}
+async function boot(){
+  render();
+  sb.auth.onAuthStateChange((event, session) => { if(session && !started) start(session); });
+  const { data } = await sb.auth.getSession();
+  if(data.session) start(data.session); else showAuth();
+}
+document.addEventListener("visibilitychange", async () => {
+  if(document.visibilityState !== "visible" || !UID) return;
+  if(Date.now() - lastSheetLoad > 2 * 60 * 1000){ try{ await loadUserData(); }catch(_){} await loadSheets(); }
+});
+
+boot();
+})();
+</script>
+</body>
+</html>
