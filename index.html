@@ -296,6 +296,7 @@ label.f{display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--mu
 .steps{margin:8px 0 0;padding-left:22px;line-height:1.7;color:#e6dccd}
 .adv{margin-top:18px;border:1px solid var(--line);border-radius:10px;padding:10px 14px}
 .adv summary{cursor:pointer;color:var(--muted);font-weight:600}
+.code{width:100%;min-height:160px;margin-top:10px;background:var(--ink);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:10px;font:12px/1.4 ui-monospace,Menlo,monospace}
 .btn.icon{padding:8px 10px;display:inline-flex;align-items:center;color:var(--muted)}
 a.btn{text-decoration:none;color:inherit;display:inline-flex;align-items:center}
 a.btn.primary{color:#22180c}
@@ -1533,7 +1534,7 @@ function uniqueId(seen,base){ const n=(seen.get(base)||0)+1; seen.set(base,n); r
 const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
 function markDirty(){ allDirty = true; wDirty = true; lDirty = true; }
 let renderTimer = null;
-function soon(){ markDirty(); clearTimeout(renderTimer); renderTimer = setTimeout(render, 60); }
+function soon(){ markDirty(); clearTimeout(renderTimer); renderTimer = setTimeout(render, 60); if(typeof scheduleWidget === "function") scheduleWidget(); }
 function mapFor(name){ return name === "books" ? userDocs : name === "watch" ? wuser : luser; }
 
 /* A small stand-in for the old document store, backed by Supabase tables */
@@ -1796,6 +1797,78 @@ function applyAuto(kind, x){
   return x;
 }
 
+/* ---------- iPhone widget ---------- */
+const APP_URL = location.origin + location.pathname;
+let widgetKey = "", widgetWritten = 0, widgetTimer = null, widgetMissing = false;
+function sample(arr, n){ const a = [...arr]; for(let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a.slice(0, n); }
+function widgetSnapshot(){
+  const pic = id => id ? blob(id) : "";
+  const all = books();
+  const yr = String(new Date().getFullYear());
+  const bookCard = b => ({ title: b.title, sub: b.author || "", cover: pic(b.coverId), color: genreColor(b.genre) });
+  const reading = all.filter(b => b.status === "reading").sort((a, b) => String(b.started || "").localeCompare(String(a.started || ""))).slice(0, 3).map(bookCard);
+  const tbr = all.filter(b => b.status === "tbr");
+  const withCovers = tbr.filter(b => b.coverId);
+  const picks = [...sample(withCovers, 25), ...sample(tbr.filter(b => !b.coverId), 40 - Math.min(25, withCovers.length))].map(bookCard);
+  const watching = watchItems().filter(m => m.status === "watching").slice(0, 3).map(m => ({ title: m.title, sub: [m.type, m.where].filter(Boolean).join(" · "), cover: pic(m.posterId), color: watchColor(m.genre) }));
+  const albums = sample(albumItems().filter(a => a.status !== "listened"), 12).map(a => ({ title: a.title, sub: a.artist || "", cover: pic(a.coverId), color: musicColor(a.genre) }));
+  const readThisYear = all.filter(b => b.status === "read" && String(b.finished || "").startsWith(yr)).length;
+  return { reading, watching, tbrPicks: picks, albums, tbrCount: tbr.length, readThisYear, updatedAt: new Date().toISOString() };
+}
+function scheduleWidget(){ clearTimeout(widgetTimer); widgetTimer = setTimeout(writeWidget, 4000); }
+async function writeWidget(force){
+  if(!UID || !SETTINGS.widgetCode || widgetMissing || !catalogLoaded) return;
+  const snap = widgetSnapshot();
+  const key = JSON.stringify([snap.reading, snap.watching, snap.tbrCount, snap.readThisYear]);
+  if(!force && key === widgetKey && Date.now() - widgetWritten < 3 * 60 * 60 * 1000) return;
+  const { error } = await sb.from("widget_snapshots").upsert({ user_id: UID, secret: SETTINGS.widgetCode, data: snap, updated_at: new Date().toISOString() });
+  if(error){ if(/widget_snapshots|relation|schema cache/i.test(error.message || "")) widgetMissing = true; return; }
+  widgetKey = key; widgetWritten = Date.now();
+}
+function randomCode(){ const a = new Uint8Array(24); crypto.getRandomValues(a); return Array.from(a, x => x.toString(16).padStart(2, "0")).join(""); }
+async function widgetScript(){
+  const res = await fetch("widget/genos-library-widget.js", { cache: "no-store" });
+  const t = await res.text();
+  return t.replace("__SUPABASE_URL__", SB_URL).replace("__SUPABASE_KEY__", window.GL_CONFIG.supabaseKey).replace("__WIDGET_CODE__", SETTINGS.widgetCode).replace("__APP_URL__", APP_URL);
+}
+function renderWidgetSection(){
+  if(!SETTINGS.widgetCode) return `<h2>iPhone widget</h2>
+    <p class="sub">Shows what you're reading and watching, plus a random pick from your TBR, on your home screen.</p>
+    <div class="row"><button class="btn primary" type="button" id="w-setup">Set up the widget</button></div><p class="err" id="w-err"></p>`;
+  return `<h2>iPhone widget</h2>
+    <ol class="steps">
+      <li>Install <b>Scriptable</b> (free) from the App Store.</li>
+      <li>Tap <b>Copy widget script</b> below.</li>
+      <li>In Scriptable, tap <b>+</b>, paste, and tap the title at the top to rename it <b>Geno's Library</b>. Tap <b>Done</b>.</li>
+      <li>Long-press your home screen, tap <b>Edit → Add Widget</b>, choose <b>Scriptable</b>, pick a size, and tap <b>Add Widget</b>.</li>
+      <li>Tap the new widget (while the home screen is still jiggling) and set <b>Script</b> to <b>Geno's Library</b>. Tap outside to finish.</li>
+    </ol>
+    <div class="row"><button class="btn primary" type="button" id="w-copy">Copy widget script</button><button class="btn" type="button" id="w-refresh">Update widget now</button></div>
+    <p class="err" id="w-err">${widgetMissing ? "The widget table isn't set up in Supabase yet. Run widget.sql there, then reload this page." : ""}</p>
+    <textarea id="w-script" class="code" readonly hidden></textarea>
+    <p class="hint">Keep this script private. It contains a code that lets the widget read your reading list.</p>`;
+}
+function wireWidgetSection(){
+  const $ = id => document.getElementById(id);
+  if($("w-setup")) $("w-setup").addEventListener("click", async () => {
+    try{
+      widgetMissing = false;
+      await saveSettings({ ...SETTINGS, widgetCode: randomCode() });
+      await writeWidget(true);
+      render();
+      if(widgetMissing) $("w-err").textContent = "The widget table isn't set up in Supabase yet. Run widget.sql there, then try again.";
+    }catch(_){ $("w-err").textContent = "Couldn't set up the widget. Check your connection and try again."; }
+  });
+  if($("w-copy")) $("w-copy").addEventListener("click", async () => {
+    const btn = $("w-copy"), ta = $("w-script");
+    let text = "";
+    try{ text = await widgetScript(); }catch(_){ $("w-err").textContent = "Couldn't load the widget script. Try again."; return; }
+    try{ await navigator.clipboard.writeText(text); btn.textContent = "Copied"; }
+    catch(_){ ta.hidden = false; ta.value = text; ta.focus(); ta.select(); $("w-err").textContent = "Your browser blocked copying. The script is selected below; copy it from there."; }
+  });
+  if($("w-refresh")) $("w-refresh").addEventListener("click", async () => { widgetMissing = false; await writeWidget(true); toast(widgetMissing ? "Run widget.sql in Supabase first." : "Widget updated. It refreshes on your phone within about half an hour."); });
+}
+
 /* ---------- account screens ---------- */
 function showAuth(message){
   document.body.dataset.room = "auth";
@@ -1849,6 +1922,7 @@ function renderSettings(){
         <div class="full row"><button class="btn" type="submit">Save tab links</button></div>
       </form>
     </details>
+    ${renderWidgetSection()}
     <h2>Account</h2>
     <p class="sub">Signed in as <b>${esc(EMAIL)}</b></p>
     <div class="row"><button class="btn" type="button" id="signOut">Sign out</button></div>
@@ -1877,6 +1951,7 @@ function wireSettings(){
     try{ await saveSettings({ ...SETTINGS, sheets }); toast("Links saved."); await loadSheets(); }
     catch(_){ document.getElementById("s-err").textContent = "Couldn't save. Check your connection and try again."; }
   });
+  wireWidgetSection();
   document.getElementById("signOut").addEventListener("click", async () => { await sb.auth.signOut(); location.hash = ""; location.reload(); });
 }
 
