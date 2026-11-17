@@ -109,22 +109,16 @@ function addSlot(parent, label, item, image, w, h) {
   }
 }
 
-// The covers to show: what you're reading and watching, then picks to fill.
+// The covers to show: what you're reading, what you're watching, and an album to spin.
 function slotsFor(data, count) {
   const reading = data.reading || [];
   const watching = data.watching || [];
-  const picks = [...(data.tbrPicks || [])].sort(() => Math.random() - 0.5);
   const slots = [];
   reading.slice(0, 2).forEach(b => slots.push(["Reading", b]));
   if (!reading.length) slots.push(["Reading", null]);
   slots.push(["Watching", watching[0] || null]);
   const album = pickOne(data.albums);
-  if (album && slots.length < count) slots.push(["Spin next", album]);
-  while (slots.length < count) {
-    const b = picks.shift();
-    if (!b) break;
-    slots.splice(slots.length - (album ? 1 : 0), 0, ["Read next", b]);
-  }
+  if (album) slots.push(["Spin next", album]);
   return slots.slice(0, count);
 }
 
@@ -169,25 +163,25 @@ async function build(family) {
   if (family === "small") {
     w.setPadding(pad, pad, pad, pad);
     const r = (data.reading || [])[0];
-    const item = r || pickOne(data.tbrPicks);
+    const item = r || null;
     const coverH = size.h - pad * 2 - labelH;
     const row = w.addStack();
     row.layoutHorizontally();
     row.addSpacer();
-    addSlot(row, r ? "Reading" : "Read next", item, await loadImage(item && item.cover), Math.round(coverH * 2 / 3), coverH);
+    addSlot(row, "Reading", item, await loadImage(item && item.cover), Math.round(coverH * 2 / 3), coverH);
     row.addSpacer();
     return w;
   }
 
   if (family === "medium") {
     w.setPadding(pad, pad, pad, pad);
-    const count = 4;
+    const slots = slotsFor(data, 4);
     const coverH = size.h - pad * 2 - labelH;
-    const coverW = Math.min(Math.round(coverH * 2 / 3), Math.floor((size.w - pad * 2 - gap * (count - 1)) / count));
+    const coverW = Math.min(Math.round(coverH * 2 / 3), Math.floor((size.w - pad * 2 - gap * (slots.length - 1)) / slots.length));
     const row = w.addStack();
     row.layoutHorizontally();
     row.addSpacer();
-    await addCoverRow(row, slotsFor(data, count), coverW, Math.round(coverW * 1.5), gap);
+    await addCoverRow(row, slots, coverW, Math.round(coverW * 1.5), gap + 6);
     row.addSpacer();
     return w;
   }
@@ -210,7 +204,7 @@ async function build(family) {
   const coverH = Math.min(Math.round(coverW * 1.5), Math.floor((size.h - 28 - 24 - 10 - 12 - labelH * 2) / 2));
   const top = slotsFor(data, count);
   const used = new Set(top.map(([, it]) => it && it.title));
-  const rest = (data.tbrPicks || []).filter(b => !used.has(b.title)).sort(() => Math.random() - 0.5).slice(0, count).map(b => ["Read next", b]);
+  const rest = (data.tbrPicks || []).filter(b => !used.has(b.title)).sort(() => Math.random() - 0.5).slice(0, count).map(b => ["On your TBR", b]);
   for (const [i, slots] of [top, rest].entries()) {
     if (i) w.addSpacer(12);
     const line = w.addStack();
