@@ -430,8 +430,8 @@ const slug=s=>String(s||"").toLowerCase().normalize("NFKD").replace(/[^\w\s-]/g,
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 // Sub-genres that count as a main palette genre (color, shelves and key)
 const GENRE_ALIASES = {
-  "MM Sports Romance": ["mm hockey romance","mm football romance"],
-  "MM Workplace Romance": ["mm work romance","mm construction romance","mm teacher romance"]
+  "MM Sports Romance": ["mm hockey romance","mm football romance","mm baseball romance","mm soccer romance","mm basketball romance","mm racing romance"],
+  "MM Workplace Romance": ["mm work romance","mm construction romance","mm teacher romance","mm doctor romance","mm firefighter romance","mm police romance","mm mechanic romance","mm musician romance"]
 };
 function genreNames(name){ return [norm(name), ...(GENRE_ALIASES[name]||[]).map(norm)]; }
 function genreColor(genre){
