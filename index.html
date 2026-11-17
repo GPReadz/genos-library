@@ -285,6 +285,27 @@ label.f{display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--mu
 .bthumb{width:44px;height:56px;border-radius:3px;overflow:hidden;background:var(--raise)}
 .bthumb img{width:100%;height:100%;object-fit:cover}
 
+/* color key */
+.with-key{display:grid;grid-template-columns:minmax(0,1fr) 210px;gap:24px;align-items:start}
+.view-main{min-width:0}
+.legend{position:sticky;top:132px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;max-height:calc(100vh - 150px);overflow:auto}
+.legend summary{font-family:var(--display);font-size:18px;cursor:pointer}
+.legend .lg-note{font-size:12px;color:var(--muted);margin:6px 0 8px}
+.legend ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.legend li{display:grid;grid-template-columns:16px minmax(0,1fr) auto;gap:8px;align-items:center;font-size:13px}
+.lg-sw{width:16px;height:16px;border-radius:4px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+.lg-l{color:var(--text);line-height:1.25}
+.lg-c{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
+.lg-extra{margin-top:12px !important;padding-top:10px !important;border-top:1px solid var(--line) !important}
+.lg-tape{width:10px;height:16px;justify-self:center;border-radius:1px;background:#1c1b1d;box-shadow:inset 0 0 0 1px #3a383c}
+.lg-tape.box{width:13px;background:#e6e0d4}
+.lg-dot{width:8px;height:8px;justify-self:center;border-radius:50%;background:#fff;box-shadow:0 0 0 2px rgba(0,0,0,.4)}
+@media (max-width:1000px){
+  .with-key{grid-template-columns:1fr;gap:14px}
+  .legend{position:static;max-height:none;order:-1}
+  .legend[open] ul:not(.lg-extra){display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:6px 16px}
+}
+
 /* account, settings, toast */
 .auth{max-width:420px;margin:40px auto;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:26px}
 .auth h1,.settings h2{font-family:var(--display);font-weight:400}
@@ -517,8 +538,10 @@ function render(){
   if(db && !catalog.size) html+=`<div class="banner"><span>${(SETTINGS.sheets||{}).tbr?"Your TBR List couldn't be read. Check its link in Settings.":"Add your TBR List link in Settings to fill the Main Shelf."}</span><a class="btn primary small" href="#settings">Open Settings</a></div>`;
   html+= v==="tbr"?renderMain() : v==="shelves"?renderShelves() : v==="case"?renderCase() : v==="read"?renderRead() : renderBooks();
   }
-  main.innerHTML=html;
+  const key=colorKey(room);
+  main.innerHTML=key?`<div class="with-key"><div class="view-main">${html}</div>${key}</div>`:html;
   wire();
+  const lg=document.getElementById("legend"); if(lg) lg.addEventListener("toggle",()=>{ui.keyOpen=lg.open;});
 }
 
 /* ---------- spines ---------- */
@@ -1061,6 +1084,27 @@ function palColor(pal,g,fallback){ const s=String(g||"").toLowerCase(); const fi
 const watchColor=g=>palColor(WATCH_PAL,g,"#5B5650");
 const musicColor=g=>palColor(MUSIC_PAL,g,"#66605A");
 const firstGenre=g=>String(g||"").split(",")[0].trim()||"Other";
+
+/* ---------- color key ---------- */
+const WATCH_KEY=[["Drama","#7D2E3E"],["Comedy","#C98418"],["Romance","#A8324E"],["Horror","#6A1717"],["Thriller","#1E3A5F"],["Crime / Mystery","#2D5352"],["Action / Adventure","#B4411E"],["Sci-Fi / Fantasy","#2B6E99"],["Documentary","#55703B"],["Animation / Anime","#D96B27"],["Musical","#9C3A87"],["Family","#3B8C7C"],["Reality","#8C6D1F"],["Western","#8A5A2B"],["War","#5C5A3A"],["Other","#5B5650"]];
+const MUSIC_KEY=[["Pop","#D2447C"],["K-Pop","#B04FC9"],["Country","#B5722F"],["R&B / Soul","#6D2E8C"],["Hip-Hop / Rap","#C59A2E"],["Rock","#9A2323"],["Alternative","#3E6B5A"],["Indie","#567A9C"],["Dance / Electronic","#2F5FD0"],["Musical / Soundtrack","#A8324E"],["Jazz","#1F5566"],["Folk","#6B7A3A"],["Latin","#D0532E"],["Gospel / Christian","#8A6D2A"],["Classical","#5E5470"],["Other","#66605A"]];
+function colorKey(room){
+  const key=room==="watch"?WATCH_KEY:room==="listen"?MUSIC_KEY:[...PALETTE.map(p=>[p.name,p.color]),["Other",NEUTRAL]];
+  const items=room==="watch"?watchItems():room==="listen"?albumItems():books();
+  const colorOf=room==="watch"?(x=>watchColor(x.genre)):room==="listen"?(x=>musicColor(x.genre)):(x=>genreColor(x.genre));
+  const counts=new Map(); for(const x of items){ const c=colorOf(x).toLowerCase(); counts.set(c,(counts.get(c)||0)+1); }
+  const rows=key.map(([label,color])=>({label,color,count:counts.get(color.toLowerCase())||0})).filter(r=>r.count>0);
+  if(!rows.length) return "";
+  const what=room==="watch"?"Label color = genre":room==="listen"?"Sleeve color = genre":"Spine color = genre";
+  const extra=room==="watch"?`<li><span class="lg-tape"></span><span class="lg-l">Black tape = movie</span></li><li><span class="lg-tape box"></span><span class="lg-l">Box set = show</span></li><li><span class="lg-dot"></span><span class="lg-l">Watching now</span></li>`
+    :room==="books"?`<li><span class="lg-dot"></span><span class="lg-l">Currently reading</span></li>`:"";
+  const open=ui.keyOpen??(window.innerWidth>1000);
+  return `<details class="legend" id="legend" ${open?"open":""}><summary>Color key</summary>
+    <p class="lg-note">${what}</p>
+    <ul>${rows.map(r=>`<li><span class="lg-sw" style="background:${r.color}"></span><span class="lg-l">${esc(r.label)}</span><span class="lg-c">${r.count.toLocaleString()}</span></li>`).join("")}</ul>
+    ${extra?`<ul class="lg-extra">${extra}</ul>`:""}
+  </details>`;
+}
 function toISO(text){ const s=String(text||"").trim(); if(!s) return ""; if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s; const d=new Date(s); if(isNaN(d)) return ""; return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; }
 const nkey=s=>String(s||"").toLowerCase().replace(/[^a-z0-9]/g,"");
 
