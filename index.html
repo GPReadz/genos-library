@@ -434,6 +434,7 @@ const GENRE_ALIASES = {
   "MM Workplace Romance": ["mm work romance","mm construction romance","mm teacher romance","mm doctor romance","mm firefighter romance","mm police romance","mm mechanic romance","mm musician romance","mm military romance","mm royalty romance","mm political romance"],
   "MM Dark Romance": ["mm crime romance","mm mafia romance","mm mystery romance","mm thriller romance"],
   "MM Cowboy Romance": ["mm historical romance"],
+  "Fiction": ["poetry","thriller","mystery","dystopia","graphic novel"],
   "MM Fantasy Romance": ["mm paranormal romance","mm superhero romance","mm sci-fi romance","mm scifi romance","mm science fiction romance"]
 };
 function genreNames(name){ return [norm(name), ...(GENRE_ALIASES[name]||[]).map(norm)]; }
