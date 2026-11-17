@@ -65,13 +65,35 @@ function pickOne(list) {
   return list && list.length ? list[Math.floor(Math.random() * list.length)] : null;
 }
 
+// Covers are saved on the phone after the first download, so the home-screen
+// widget (which has little time and memory) can show them without re-downloading.
+const FM = FileManager.local();
+const CACHE = FM.joinPath(FM.cacheDirectory(), "genos-library-covers");
+if (!FM.fileExists(CACHE)) FM.createDirectory(CACHE, true);
+function cacheName(url, w, h, fill) {
+  const key = `${url}|${w}x${h}|${fill ? 1 : 0}`;
+  let a = 5381, b = 52711;
+  for (let i = 0; i < key.length; i++) { const c = key.charCodeAt(i); a = (a * 33) ^ c; b = (b * 33) ^ c; }
+  return FM.joinPath(CACHE, `${(a >>> 0).toString(36)}${(b >>> 0).toString(36)}.png`);
+}
+async function coverImage(url, w, h, fill) {
+  if (!url) return null;
+  const path = cacheName(url, w, h, fill);
+  try { if (FM.fileExists(path)) { const img = FM.readImage(path); if (img) return img; } } catch (e) {}
+  const big = await loadImage(url);
+  if (!big) return null;
+  const small = shrink(big, w, h, fill);
+  if (small) { try { FM.writeImage(path, small); } catch (e) {} }
+  return small;
+}
+
 // A cover (or a genre-colored stand-in) at a fixed size.
 function addCover(parent, item, w, h, image, square) {
   const box = parent.addStack();
   box.size = new Size(w, h);
   box.cornerRadius = 4;
   box.backgroundColor = new Color(item && item.color ? item.color : "#7a6a5a");
-  const small = image ? shrink(image, w, h, !square) : null;
+  const small = image;
   if (small) {
     if (square) box.backgroundColor = C.card;
     const pic = box.addImage(small);
@@ -139,7 +161,7 @@ function slotsFor(data, count) {
 }
 
 async function addCoverRow(w, slots, coverW, coverH, gap) {
-  const images = await Promise.all(slots.map(([, item]) => loadImage(item && item.cover)));
+  const images = await Promise.all(slots.map(([label, item]) => coverImage(item && item.cover, coverW, coverH, label !== "Spin next")));
   const row = w.addStack();
   row.layoutHorizontally();
   row.topAlignContent();
@@ -184,7 +206,8 @@ async function build(family) {
     const row = w.addStack();
     row.layoutHorizontally();
     row.addSpacer();
-    addSlot(row, "Reading", item, await loadImage(item && item.cover), Math.round(coverH * 2 / 3), coverH);
+    const sw = Math.round(coverH * 2 / 3);
+    addSlot(row, "Reading", item, await coverImage(item && item.cover, sw, coverH, true), sw, coverH);
     row.addSpacer();
     return w;
   }
