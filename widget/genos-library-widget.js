@@ -31,9 +31,31 @@ async function loadSnapshot() {
 async function loadImage(url) {
   if (!url) return null;
   try {
-    const req = new Request(url);
-    req.timeoutInterval = 8;
-    return await req.loadImage();
+    const req = new Request(String(url).replace(/^http:/, "https:"));
+    req.timeoutInterval = 10;
+    req.headers = { "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1" };
+    const img = await req.loadImage();
+    return img && img.size && img.size.width > 0 ? img : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+// Redraw a cover at the exact size it shows on the widget. Big photos and
+// full-size covers otherwise come out blank, because widgets drop large images.
+function shrink(image, w, h, fill) {
+  try {
+    const scale = 2;
+    const W = Math.round(w * scale), H = Math.round(h * scale);
+    const iw = image.size.width, ih = image.size.height;
+    const s = fill ? Math.max(W / iw, H / ih) : Math.min(W / iw, H / ih);
+    const dw = iw * s, dh = ih * s;
+    const ctx = new DrawContext();
+    ctx.size = new Size(W, H);
+    ctx.opaque = false;
+    ctx.respectScreenScale = false;
+    ctx.drawImageInRect(image, new Rect((W - dw) / 2, (H - dh) / 2, dw, dh));
+    return ctx.getImage();
   } catch (e) {
     return null;
   }
@@ -49,17 +71,11 @@ function addCover(parent, item, w, h, image, square) {
   box.size = new Size(w, h);
   box.cornerRadius = 4;
   box.backgroundColor = new Color(item && item.color ? item.color : "#7a6a5a");
-  if (image) {
-    if (square) {
-      box.backgroundColor = C.card;
-      box.centerAlignContent();
-      const pic = box.addImage(image);
-      pic.imageSize = new Size(w, w);
-    } else {
-      const pic = box.addImage(image);
-      pic.imageSize = new Size(w, h);
-      pic.applyFillingContentMode();
-    }
+  const small = image ? shrink(image, w, h, !square) : null;
+  if (small) {
+    if (square) box.backgroundColor = C.card;
+    const pic = box.addImage(small);
+    pic.imageSize = new Size(w, h);
   } else {
     box.setPadding(3, 3, 3, 3);
     box.centerAlignContent();
@@ -217,7 +233,7 @@ async function build(family) {
   return w;
 }
 
-const family = config.widgetFamily || "large";
+const family = config.widgetFamily || "medium";
 const widget = await build(family);
 if (config.runsInWidget) {
   Script.setWidget(widget);
