@@ -428,16 +428,22 @@ const clean=v=>{const s=String(v??"").trim();return (!s||s.toUpperCase()==="N/A"
 const splitList=s=>String(s||"").split(/[,;\n]/).map(x=>x.trim()).filter(x=>x&&x.toUpperCase()!=="N/A");
 const slug=s=>String(s||"").toLowerCase().normalize("NFKD").replace(/[^\w\s-]/g,"").trim().replace(/[\s_]+/g,"-").replace(/-+/g,"-").slice(0,60)||"x";
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+// Sub-genres that count as a main palette genre (color, shelves and key)
+const GENRE_ALIASES = {
+  "MM Sports Romance": ["mm hockey romance","mm football romance"],
+  "MM Workplace Romance": ["mm work romance","mm construction romance","mm teacher romance"]
+};
+function genreNames(name){ return [norm(name), ...(GENRE_ALIASES[name]||[]).map(norm)]; }
 function genreColor(genre){
   const g=norm(genre); if(!g) return NEUTRAL;
   const rank=p=>p.name.startsWith("MM")?100+p.name.length:p.name.length;
-  const hit=[...PALETTE].sort((a,b)=>rank(b)-rank(a)).find(p=>g.includes(norm(p.name))||(p.name==="MM Workplace Romance"&&g.includes("mm work romance")));
+  const hit=[...PALETTE].sort((a,b)=>rank(b)-rank(a)).find(p=>genreNames(p.name).some(n=>g.includes(n)));
   return hit?hit.color:NEUTRAL;
 }
 function matches(shelf,b){
   const v=norm(shelf.value);
   switch(shelf.type){
-    case "genre": return !!v && (norm(b.genre).includes(v) || (v==="mm workplace romance" && norm(b.genre).includes("mm work romance")));
+    case "genre": { if(!v) return false; const bg=norm(b.genre); const p=PALETTE.find(x=>norm(x.name)===v); return p ? genreNames(p.name).some(n=>bg.includes(n)) : bg.includes(v); }
     case "trope": return (b.tropes||[]).some(t=>norm(t)===v);
     case "burn": return norm(b.burn)===v;
     case "ending": return norm(b.ending)===v;
