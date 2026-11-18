@@ -315,6 +315,7 @@ label.f{display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--mu
 .settings h2{font-size:22px;margin:26px 0 6px}
 .settings .grid{grid-template-columns:1fr;margin-top:12px}
 .steps{margin:8px 0 0;padding-left:22px;line-height:1.7;color:#e6dccd}
+.wsub{font-size:15px;font-weight:600;margin:18px 0 0;color:#f3ece2}
 .adv{margin-top:18px;border:1px solid var(--line);border-radius:10px;padding:10px 14px}
 .adv summary{cursor:pointer;color:var(--muted);font-weight:600}
 .code{width:100%;min-height:160px;margin-top:10px;background:var(--ink);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:10px;font:12px/1.4 ui-monospace,Menlo,monospace}
@@ -1882,8 +1883,8 @@ async function writeWidget(force){
   widgetKey = key; widgetWritten = Date.now();
 }
 function randomCode(){ const a = new Uint8Array(24); crypto.getRandomValues(a); return Array.from(a, x => x.toString(16).padStart(2, "0")).join(""); }
-async function widgetScript(){
-  const res = await fetch("widget/genos-library-widget.js", { cache: "no-store" });
+async function widgetScript(file){
+  const res = await fetch(file || "widget/genos-library-widget.js", { cache: "no-store" });
   const t = await res.text();
   return t.replace("__SUPABASE_URL__", SB_URL).replace("__SUPABASE_KEY__", window.GL_CONFIG.supabaseKey).replace("__WIDGET_CODE__", SETTINGS.widgetCode).replace("__APP_URL__", APP_URL);
 }
@@ -1892,17 +1893,29 @@ function renderWidgetSection(){
     <p class="sub">Shows what you're reading and watching, plus a random pick from your TBR, on your home screen.</p>
     <div class="row"><button class="btn primary" type="button" id="w-setup">Set up the widget</button></div><p class="err" id="w-err"></p>`;
   return `<h2>iPhone widget</h2>
+    <p class="sub">Shows what you're reading and watching, plus an album to spin, as covers side by side.</p>
+    <h3 class="wsub">If your Home Screen is set to Clear or Tinted: use Scripting</h3>
+    <ol class="steps">
+      <li>Install <b>Scripting</b> (free) from the App Store.</li>
+      <li>Tap <b>Copy Scripting widget</b> below.</li>
+      <li>In Scripting, tap <b>+</b> to make a new script and name it <b>Geno's Library</b>.</li>
+      <li>In the script, add a new file named exactly <b>widget.tsx</b>, paste, and save.</li>
+      <li>Long-press your home screen, tap <b>Edit → Add Widget</b>, choose <b>Scripting</b>, pick a size, and tap <b>Add Widget</b>.</li>
+      <li>Long-press the new widget, tap <b>Edit Widget</b>, and choose <b>Geno's Library</b>.</li>
+    </ol>
+    <div class="row"><button class="btn primary" type="button" id="w-copy-scripting">Copy Scripting widget</button></div>
+    <h3 class="wsub">Default or Dark Home Screen: Scriptable also works</h3>
     <ol class="steps">
       <li>Install <b>Scriptable</b> (free) from the App Store.</li>
-      <li>Tap <b>Copy widget script</b> below.</li>
+      <li>Tap <b>Copy Scriptable widget</b> below.</li>
       <li>In Scriptable, tap <b>+</b>, paste, and tap the title at the top to rename it <b>Geno's Library</b>. Tap <b>Done</b>.</li>
       <li>Long-press your home screen, tap <b>Edit → Add Widget</b>, choose <b>Scriptable</b>, pick a size, and tap <b>Add Widget</b>.</li>
       <li>Tap the new widget (while the home screen is still jiggling) and set <b>Script</b> to <b>Geno's Library</b>. Tap outside to finish.</li>
     </ol>
-    <div class="row"><button class="btn primary" type="button" id="w-copy">Copy widget script</button><button class="btn" type="button" id="w-refresh">Update widget now</button></div>
+    <div class="row"><button class="btn" type="button" id="w-copy">Copy Scriptable widget</button><button class="btn" type="button" id="w-refresh">Update widget now</button></div>
     <p class="err" id="w-err">${widgetMissing ? "The widget table isn't set up in Supabase yet. Run widget.sql there, then reload this page." : ""}</p>
     <textarea id="w-script" class="code" readonly hidden></textarea>
-    <p class="hint">Keep this script private. It contains a code that lets the widget read your reading list.</p>`;
+    <p class="hint">Keep these scripts private. They contain a code that lets the widget read your reading list.</p>`;
 }
 function wireWidgetSection(){
   const $ = id => document.getElementById(id);
@@ -1915,13 +1928,15 @@ function wireWidgetSection(){
       if(widgetMissing) $("w-err").textContent = "The widget table isn't set up in Supabase yet. Run widget.sql there, then try again.";
     }catch(_){ $("w-err").textContent = "Couldn't set up the widget. Check your connection and try again."; }
   });
-  if($("w-copy")) $("w-copy").addEventListener("click", async () => {
-    const btn = $("w-copy"), ta = $("w-script");
+  const copyBtn = (id, file) => { if($(id)) $(id).addEventListener("click", async () => {
+    const btn = $(id), ta = $("w-script");
     let text = "";
-    try{ text = await widgetScript(); }catch(_){ $("w-err").textContent = "Couldn't load the widget script. Try again."; return; }
+    try{ text = await widgetScript(file); }catch(_){ $("w-err").textContent = "Couldn't load the widget script. Try again."; return; }
     try{ await navigator.clipboard.writeText(text); btn.textContent = "Copied"; }
     catch(_){ ta.hidden = false; ta.value = text; ta.focus(); ta.select(); $("w-err").textContent = "Your browser blocked copying. The script is selected below; copy it from there."; }
-  });
+  }); };
+  copyBtn("w-copy", "widget/genos-library-widget.js");
+  copyBtn("w-copy-scripting", "widget/genos-library-scripting.tsx");
   if($("w-refresh")) $("w-refresh").addEventListener("click", async () => { widgetMissing = false; await writeWidget(true); toast(widgetMissing ? "Run widget.sql in Supabase first." : "Widget updated. It refreshes on your phone within about half an hour."); });
 }
 
