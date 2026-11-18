@@ -117,9 +117,11 @@ function Cover({ slot, w, h }: { slot: Slot; w: number; h: number }) {
       />
     </VStack>
   }
+  // widgetBackground (not background) so Clear/Tinted Home Screens show the title instead of a white box.
   return <VStack
     frame={{ width: w, height: h }}
-    background={(slot.item ? (slot.item.color || "#7a6a5a") : CARD) as any}
+    widgetBackground={{ style: (slot.item ? (slot.item.color || "#7a6a5a") : CARD) as any, shape }}
+    border={{ style: "rgba(255,255,255,0.35)" as any, width: 1 }}
     clipShape={shape}
   >
     <Spacer />

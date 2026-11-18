@@ -1905,22 +1905,63 @@ async function scriptingInstaller(){
   const code = await widgetScript("widget/genos-library-scripting.tsx");
   return `// Geno's Library widget installer for the Scripting app.
 // Paste this into index.tsx and tap the play button. It creates widget.tsx for you.\n// (Run this file, not widget.tsx.)
-import { Dialog, Script, Widget } from "scripting"
+import { Dialog, Script, Widget, fetch } from "scripting"
 
 const CODE = ${JSON.stringify(code)}
+
+const SB_URL = ${JSON.stringify(SB_URL)}
+const SB_KEY = ${JSON.stringify(window.GL_CONFIG.supabaseKey)}
+const CODE_KEY = ${JSON.stringify(SETTINGS.widgetCode || "")}
+
+// Checks each cover the widget will show, so we can tell what's wrong if one is blank.
+async function checkCovers(): Promise<string> {
+  try {
+    const res = await fetch(SB_URL + "/rest/v1/rpc/get_widget", {
+      method: "POST",
+      headers: { apikey: SB_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify({ p_secret: CODE_KEY })
+    })
+    if (!res.ok) return "Couldn't read your library (HTTP " + res.status + ")."
+    const d: any = await res.json()
+    if (!d || typeof d !== "object") return "Your library data is empty. Open Geno's Library and tap Update widget now."
+    const rows: [string, any][] = [
+      ["Reading", (d.reading || [])[0]],
+      ["Watching", (d.watching || [])[0]],
+      ["Listening", (d.listening || [])[0] || (d.albums || [])[0]]
+    ]
+    const out: string[] = []
+    for (const [label, item] of rows) {
+      if (!item) { out.push(label + ": nothing set"); continue }
+      if (!item.cover) { out.push(label + ": " + item.title + " has no cover link"); continue }
+      try {
+        const r = await fetch(String(item.cover).replace(/^http:/, "https:"))
+        if (!r.ok) { out.push(label + ": " + item.title + " cover link failed (HTTP " + r.status + ")"); continue }
+        const img = UIImage.fromData(await r.data())
+        out.push(label + ": " + item.title + (img ? " cover OK (" + img.width + "x" + img.height + ")" : " cover link isn't an image"))
+      } catch (e) {
+        out.push(label + ": " + item.title + " cover couldn't load (" + String(e) + ")")
+      }
+    }
+    return out.join("\\n")
+  } catch (e) {
+    return "Check failed: " + String(e)
+  }
+}
 
 async function main() {
   try {
     FileManager.writeAsStringSync(Script.directory + "/widget.tsx", CODE)
     Widget.reloadAll()
-    await Dialog.alert({
-      title: "Widget installed",
-      message: "Now add a medium Scripting widget to your home screen, long-press it, tap Edit Widget, and choose this script.",
-      buttonLabel: "OK"
-    })
   } catch (e) {
     await Dialog.alert({ title: "Couldn't install the widget", message: String(e), buttonLabel: "OK" })
+    return
   }
+  const report = await checkCovers()
+  await Dialog.alert({
+    title: "Widget installed",
+    message: report + "\\n\\nIf you haven't yet, add a medium Scripting widget to your home screen, long-press it, tap Edit Widget, and choose this script.",
+    buttonLabel: "OK"
+  })
 }
 
 void main()
