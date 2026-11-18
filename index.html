@@ -225,6 +225,7 @@ label.f{display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--mu
   background:repeating-linear-gradient(180deg,transparent 0 var(--h),var(--wood) var(--h) calc(var(--h) + 6px),var(--wood-dark) calc(var(--h) + 6px) calc(var(--h) + 13px),transparent calc(var(--h) + 13px) calc(var(--h) + 30px)) 0 18px / 100% calc(100% - 18px) no-repeat,
   radial-gradient(100% 80% at 50% 0%,color-mix(in srgb,var(--c) 22%,#241c16),#18130f)}
 .lp{--g:#66605a;position:relative;width:var(--h);height:var(--h);flex:none;border:0;padding:0;background:none}
+.lp.now::after{content:"";position:absolute;top:6px;right:6px;width:10px;height:10px;border-radius:50%;background:#fff;box-shadow:0 0 0 2px rgba(0,0,0,.45);z-index:3}
 .disc{position:absolute;top:4%;left:30%;width:92%;height:92%;border-radius:50%;z-index:1;transition:left .35s cubic-bezier(.2,.8,.3,1);
   background:conic-gradient(from 30deg,transparent 0 10%,rgba(255,255,255,.10) 14%,transparent 20% 55%,rgba(255,255,255,.07) 60%,transparent 66%),repeating-radial-gradient(circle,#121212 0 2px,#1f1f1f 2px 3px);box-shadow:0 4px 10px rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,255,255,.12)}
 .disc .lbl{position:absolute;inset:32%;border-radius:50%;background:var(--g) center/cover;box-shadow:0 0 0 2px rgba(0,0,0,.4)}
@@ -1310,7 +1311,7 @@ function sleeveHTML(a){
 }
 function recordHTML(a){
   const c=musicColor(a.genre);
-  return `<button class="lp" type="button" data-lopen="${esc(a.id)}" style="--g:${c}" aria-label="${esc(a.title)} by ${esc(a.artist)}" title="${esc(a.title)} · ${esc(a.artist)}"><span class="disc"><span class="lbl"${a.coverId?` style="background-image:url(${blob(a.coverId)})"`:""}></span></span><span class="sleeve${a.coverId?" has":""}">${sleeveHTML(a)}</span></button>`;
+  return `<button class="lp${a.status==="listening"?" now":""}" type="button" data-lopen="${esc(a.id)}" style="--g:${c}" aria-label="${esc(a.title)} by ${esc(a.artist)}" title="${esc(a.title)} · ${esc(a.artist)}"><span class="disc"><span class="lbl"${a.coverId?` style="background-image:url(${blob(a.coverId)})"`:""}></span></span><span class="sleeve${a.coverId?" has":""}">${sleeveHTML(a)}</span></button>`;
 }
 const LSORT={artist:(a,b)=>String(a.artist).localeCompare(String(b.artist))||String(a.title).localeCompare(String(b.title)),title:(a,b)=>String(a.title).localeCompare(String(b.title)),sheet:(a,b)=>(a.row??1e9)-(b.row??1e9)};
 function renderRecordWall(){
@@ -1319,7 +1320,7 @@ function renderRecordWall(){
   const list=queue.filter(a=>(!lui.genre||firstGenre(a.genre)===lui.genre)&&(!q||norm(a.title+" "+a.artist+" "+a.genre).includes(q))).sort(LSORT[lui.sort]);
   const genres=[...new Set(queue.map(a=>firstGenre(a.genre)))].sort();
   queueCovers("album",list.slice(0,200));
-  let out=`<div class="view-head"><div><h1>Record Wall</h1><p class="sub">${queue.length.toLocaleString()} albums to listen to${lmeta&&lmeta.syncedAt?` · synced ${esc(fmtDate(lmeta.syncedAt.slice(0,10)))}`:""}</p></div>
+  let out=`<div class="view-head"><div><h1>Record Wall</h1><p class="sub">${queue.length.toLocaleString()} albums to listen to${lmeta&&lmeta.syncedAt?` · synced ${esc(fmtDate(lmeta.syncedAt.slice(0,10)))}`:""}${(()=>{const n=queue.find(a=>a.status==="listening"); return n?` · <button class="linkish" type="button" data-lopen="${esc(n.id)}">Now listening: ${esc(n.title)}</button>`:""})()}</p></div>
     <div class="toolbar"><input class="search" id="q-listen" type="search" placeholder="Search albums or artists" value="${esc(lui.search)}" aria-label="Search albums">
     <select class="sel" id="l-genre" aria-label="Genre"><option value="">Every genre</option>${genres.map(g=>`<option ${lui.genre===g?"selected":""}>${esc(g)}</option>`).join("")}</select>
     <select class="sel" id="l-sort" aria-label="Sort">${[["artist","Sort: Artist"],["title","Sort: Album"],["sheet","Sort: Sheet order"]].map(([k,l])=>`<option value="${k}" ${lui.sort===k?"selected":""}>${l}</option>`).join("")}</select>
@@ -1353,18 +1354,25 @@ function renderListened(){
   if(done.length>ui.listLimit) out+=`<div class="more"><button class="btn" type="button" id="more-list">Show more</button></div>`;
   return out;
 }
+// Only one album is "now listening" at a time; starting a new one puts the old one back in the queue.
+async function startListening(id){
+  for(const x of albumItems()) if(x.status==="listening"&&x.id!==id) await patchLayer("albums",x.id,luser,{status:"queue"});
+  await patchLayer("albums",id,luser,{status:"listening",listeningSince:new Date().toISOString()});
+}
 function openAlbumDetail(id){
   const a=getAlbum(id); if(!a) return; const c=musicColor(a.genre);
   const fact=(l,v,wide)=>`<div${wide?' class="wide"':""}><dt>${l}</dt><dd>${v||'<span class="meta">—</span>'}</dd></div>`;
   const ov=modal(`<div class="adetail" style="--g:${c}">
     <div class="turntable"><span class="disc spin"><span class="lbl"${a.coverId?` style="background-image:url(${blob(a.coverId)})"`:""}></span></span><span class="sleeve big${a.coverId?" has":""}">${sleeveHTML(a)}</span></div>
     <div><h2>${esc(a.title)}</h2><p class="by">${esc(a.artist)}</p>
-      <div class="row" style="align-items:center"><span class="pill ${a.status==="listened"?"read":""}">${a.status==="listened"?"Listened":"To listen"}</span>${Number(a.rating)>0?starsSVG(Number(a.rating),16):""}</div>
+      <div class="row" style="align-items:center"><span class="pill ${a.status==="listened"?"read":a.status==="listening"?"reading":""}">${a.status==="listened"?"Listened":a.status==="listening"?"Now listening":"To listen"}</span>${Number(a.rating)>0?starsSVG(Number(a.rating),16):""}</div>
       <dl class="facts">${fact("Artist",esc(a.artist))}${fact("Genre",esc(a.genre))}${fact("Tracks",esc(a.tracks))}${fact("Length",esc(a.length))}${fact("Rating",Number(a.rating)>0?a.rating+" / 5":"")}${fact("Favorite track",esc(a.favTrack))}${a.review?fact("Your notes",`<span style="white-space:pre-line">${esc(a.review)}</span>`,true):""}</dl>
       ${a.coverId?"":`<p class="cover-note" style="text-align:left">No album art yet. Add it with Edit.</p>`}</div></div>
     <div class="foot"><span class="err" id="err"></span><button class="btn ghost left" type="button" id="close">Close</button>
+      ${a.status!=="listened"&&a.status!=="listening"?`<button class="btn" type="button" id="nowl">Now listening</button>`:""}
       ${a.status!=="listened"?`<button class="btn" type="button" id="done">Mark as listened</button>`:""}
       <button class="btn primary" type="button" id="edit" data-autofocus>${a.status==="listened"?"Edit & rate":"Edit & add album art"}</button></div>`);
+  const nl=ov.querySelector("#nowl"); if(nl) nl.addEventListener("click",async()=>{ try{ await startListening(id); openAlbumDetail(id); }catch(_){ ov.querySelector("#err").textContent="Couldn't save. Check your connection and try again."; } });
   ov.querySelector("#close").addEventListener("click",close);
   ov.querySelector("#edit").addEventListener("click",()=>openAlbumEdit(getAlbum(id)));
   if(!a.coverId) findCover("album",a).then(url=>{ if(!url) return; const sl=ov.querySelector(".sleeve.big"); if(sl){ sl.classList.add("has"); sl.innerHTML=`<img src="${esc(url)}" alt="">`; } const lb=ov.querySelector(".turntable .lbl"); if(lb) lb.style.backgroundImage=`url("${url}")`; const n=ov.querySelector(".cover-note"); if(n) n.textContent="Found automatically. Wrong cover? Paste a link in your sheet's Cover URL column, or upload one with Edit."; });
@@ -1378,7 +1386,7 @@ function openAlbumEdit(a){
   <form class="grid" novalidate onsubmit="return false">
     <label class="f full">Album name<input id="f-title" value="${esc(a.title)}"></label>
     <label class="f">Artist<input id="f-artist" value="${esc(a.artist)}"></label>
-    <label class="f">Status<select id="f-status"><option value="queue" ${a.status!=="listened"?"selected":""}>To listen</option><option value="listened" ${a.status==="listened"?"selected":""}>Listened</option></select></label>
+    <label class="f">Status<select id="f-status"><option value="queue" ${a.status!=="listened"&&a.status!=="listening"?"selected":""}>To listen</option><option value="listening" ${a.status==="listening"?"selected":""}>Now listening</option><option value="listened" ${a.status==="listened"?"selected":""}>Listened</option></select></label>
     <label class="f">Genre<input id="f-genre" value="${esc(a.genre)}" placeholder="Pop"></label>
     <label class="f">Number of tracks<input id="f-tracks" inputmode="numeric" value="${esc(a.tracks)}"></label>
     <label class="f">Length<input id="f-length" value="${esc(a.length)}" placeholder="44min"></label>
@@ -1868,15 +1876,19 @@ function widgetSnapshot(){
   const withCovers = tbr.filter(b => b.coverId);
   const picks = [...sample(withCovers, 25), ...sample(tbr.filter(b => !b.coverId), 40 - Math.min(25, withCovers.length))].map(bookCard);
   const watching = watchItems().filter(m => m.status === "watching").slice(0, 3).map(m => ({ title: m.title, sub: [m.type, m.where].filter(Boolean).join(" · "), cover: pic(m.posterId), color: watchColor(m.genre) }));
-  const albums = sample(albumItems().filter(a => a.status !== "listened"), 12).map(a => ({ title: a.title, sub: a.artist || "", cover: pic(a.coverId), color: musicColor(a.genre) }));
+  const albumCard = a => ({ title: a.title, sub: a.artist || "", cover: pic(a.coverId), color: musicColor(a.genre) });
+  const nowL = albumItems().filter(a => a.status === "listening").sort((a, b) => String(b.listeningSince || "").localeCompare(String(a.listeningSince || "")));
+  const listening = nowL.slice(0, 1).map(albumCard);
+  // Older widget scripts pick from "albums", so while something is playing that's the only one offered.
+  const albums = listening.length ? listening : sample(albumItems().filter(a => a.status !== "listened"), 12).map(albumCard);
   const readThisYear = all.filter(b => b.status === "read" && String(b.finished || "").startsWith(yr)).length;
-  return { reading, watching, tbrPicks: picks, albums, tbrCount: tbr.length, readThisYear, updatedAt: new Date().toISOString() };
+  return { reading, watching, listening, tbrPicks: picks, albums, tbrCount: tbr.length, readThisYear, updatedAt: new Date().toISOString() };
 }
 function scheduleWidget(){ clearTimeout(widgetTimer); widgetTimer = setTimeout(writeWidget, 4000); }
 async function writeWidget(force){
   if(!UID || !SETTINGS.widgetCode || widgetMissing || !catalogLoaded) return;
   const snap = widgetSnapshot();
-  const key = JSON.stringify([snap.reading, snap.watching, snap.tbrCount, snap.readThisYear]);
+  const key = JSON.stringify([snap.reading, snap.watching, snap.listening, snap.tbrCount, snap.readThisYear]);
   if(!force && key === widgetKey && Date.now() - widgetWritten < 3 * 60 * 60 * 1000) return;
   const { error } = await sb.from("widget_snapshots").upsert({ user_id: UID, secret: SETTINGS.widgetCode, data: snap, updated_at: new Date().toISOString() });
   if(error){ if(/widget_snapshots|relation|schema cache/i.test(error.message || "")) widgetMissing = true; return; }

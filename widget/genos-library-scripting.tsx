@@ -20,6 +20,7 @@ type Snapshot = {
   watching?: Item[]
   tbrPicks?: Item[]
   albums?: Item[]
+  listening?: Item[]
   tbrCount?: number
   readThisYear?: number
 }
@@ -95,8 +96,9 @@ function slotsFor(data: Snapshot, count: number): { label: string; item: Item | 
   reading.slice(0, 2).forEach(b => slots.push({ label: "Reading", item: b, square: false }))
   if (!reading.length) slots.push({ label: "Reading", item: null, square: false })
   slots.push({ label: "Watching", item: watching[0] || null, square: false })
-  const album = pickOne(data.albums)
-  if (album) slots.push({ label: "Spin next", item: album, square: true })
+  const now = (data.listening || [])[0]
+  const album = now || pickOne(data.albums)
+  if (album) slots.push({ label: now ? "Listening" : "Spin next", item: album, square: true })
   return slots.slice(0, count)
 }
 

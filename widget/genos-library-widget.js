@@ -132,7 +132,7 @@ function addSlot(parent, label, item, image, w, h) {
   l.minimumScaleFactor = 0.6;
   col.addSpacer(3);
   if (item) {
-    addCover(col, item, w, h, image, label === "Spin next");
+    addCover(col, item, w, h, image, label === "Spin next" || label === "Listening");
   } else {
     const box = col.addStack();
     box.size = new Size(w, h);
@@ -155,13 +155,14 @@ function slotsFor(data, count) {
   reading.slice(0, 2).forEach(b => slots.push(["Reading", b]));
   if (!reading.length) slots.push(["Reading", null]);
   slots.push(["Watching", watching[0] || null]);
-  const album = pickOne(data.albums);
-  if (album) slots.push(["Spin next", album]);
+  const now = (data.listening || [])[0];
+  const album = now || pickOne(data.albums);
+  if (album) slots.push([now ? "Listening" : "Spin next", album]);
   return slots.slice(0, count);
 }
 
 async function addCoverRow(w, slots, coverW, coverH, gap) {
-  const images = await Promise.all(slots.map(([label, item]) => coverImage(item && item.cover, coverW, coverH, label !== "Spin next")));
+  const images = await Promise.all(slots.map(([label, item]) => coverImage(item && item.cover, coverW, coverH, label !== "Spin next" && label !== "Listening")));
   const row = w.addStack();
   row.layoutHorizontally();
   row.topAlignContent();
