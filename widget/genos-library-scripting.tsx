@@ -117,7 +117,7 @@ function Cover({ slot, w, h }: { slot: Slot; w: number; h: number }) {
   }
   return <VStack
     frame={{ width: w, height: h }}
-    background={slot.item ? (slot.item.color || "#7a6a5a") : CARD}
+    background={(slot.item ? (slot.item.color || "#7a6a5a") : CARD) as any}
     clipShape={shape}
   >
     <Spacer />
