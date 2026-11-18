@@ -1892,15 +1892,23 @@ async function widgetScript(file){
 async function scriptingInstaller(){
   const code = await widgetScript("widget/genos-library-scripting.tsx");
   return `// Geno's Library widget installer for the Scripting app.
-// Paste this into index.tsx and tap the play button. It creates widget.tsx for you.
-import { Script, Widget } from "scripting"
+// Paste this into index.tsx and tap the play button. It creates widget.tsx for you.\n// (Run this file, not widget.tsx.)
+import { Dialog, Script, Widget } from "scripting"
 
 const CODE = ${JSON.stringify(code)}
 
 async function main() {
-  FileManager.writeAsStringSync(Script.directory + "/widget.tsx", CODE)
-  Widget.reloadAll()
-  await Widget.preview({ family: "systemMedium" })
+  try {
+    FileManager.writeAsStringSync(Script.directory + "/widget.tsx", CODE)
+    Widget.reloadAll()
+    await Dialog.alert({
+      title: "Widget installed",
+      message: "Now add a medium Scripting widget to your home screen, long-press it, tap Edit Widget, and choose this script.",
+      buttonLabel: "OK"
+    })
+  } catch (e) {
+    await Dialog.alert({ title: "Couldn't install the widget", message: String(e), buttonLabel: "OK" })
+  }
 }
 
 void main()
@@ -1918,7 +1926,7 @@ function renderWidgetSection(){
       <li>Tap <b>Copy Scripting widget</b> below.</li>
       <li>In Scripting, tap <b>+</b> to make a new script and name it <b>Geno's Library</b>.</li>
       <li>Open its <b>index.tsx</b> file, delete what's there, and paste.</li>
-      <li>Tap the <b>▶ play</b> button. This sets up the widget and shows a preview with your covers.</li>
+      <li>With <b>index.tsx</b> open, tap the <b>▶ play</b> button. You'll see "Widget installed."</li>
       <li>Long-press your home screen, tap <b>Edit → Add Widget</b>, choose <b>Scripting</b>, pick a size, and tap <b>Add Widget</b>.</li>
       <li>Long-press the new widget, tap <b>Edit Widget</b>, and choose <b>Geno's Library</b>.</li>
     </ol>

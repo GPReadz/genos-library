@@ -3,7 +3,7 @@
 // Home Screen is set to Clear or Tinted.
 // The app fills in the values below when you copy this script from Settings.
 
-import { HStack, Image, Spacer, Text, VStack, Widget, fetch } from "scripting"
+import { HStack, Image, Script, Spacer, Text, VStack, Widget, fetch } from "scripting"
 
 const SUPABASE_URL = "__SUPABASE_URL__"
 const SUPABASE_KEY = "__SUPABASE_KEY__"
@@ -218,4 +218,6 @@ async function main() {
   </HStack>, refresh)
 }
 
-main()
+// Only draw when running on the Home Screen. (Running this file directly in
+// the app does nothing; run index.tsx instead.)
+if (Script.env === "widget") main()
