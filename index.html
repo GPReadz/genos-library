@@ -75,7 +75,7 @@ select.sel{background:var(--panel);border:1px solid var(--line);border-radius:8p
 .spine.blank.b1{background:linear-gradient(180deg,transparent 0 10px,rgba(238,212,150,.75) 10px 12px,transparent 12px 15px,rgba(238,212,150,.75) 15px 16px,transparent 16px calc(100% - 16px),rgba(238,212,150,.75) calc(100% - 16px) calc(100% - 15px),transparent calc(100% - 15px) calc(100% - 12px),rgba(238,212,150,.75) calc(100% - 12px) calc(100% - 10px),transparent calc(100% - 10px)),linear-gradient(90deg,rgba(0,0,0,.30),rgba(255,255,255,.13) 20%,rgba(255,255,255,0) 46%,rgba(0,0,0,.24)),var(--sg)}
 .spine.blank.b2{background:linear-gradient(180deg,transparent 0 calc(100% - 46px),rgba(0,0,0,.32) calc(100% - 46px)),linear-gradient(90deg,rgba(0,0,0,.30),rgba(255,255,255,.13) 20%,rgba(255,255,255,0) 46%,rgba(0,0,0,.24)),var(--sg)}
 .spine.blank.b3{background:linear-gradient(180deg,rgba(255,255,255,.16) 0 30px,transparent 30px),linear-gradient(90deg,rgba(0,0,0,.30),rgba(255,255,255,.13) 20%,rgba(255,255,255,0) 46%,rgba(0,0,0,.24)),var(--sg)}
-.spine.blank .t{writing-mode:vertical-rl;font-family:var(--display);font-size:14px;text-shadow:0 1px 1px rgba(0,0,0,.35);line-height:1.05;max-height:calc(var(--h,230px) - 90px);overflow:hidden;text-align:center}
+.spine.blank .t{writing-mode:vertical-rl;font-family:var(--display);font-size:14px;text-shadow:0 1px 1px rgba(0,0,0,.35);line-height:1.05;max-height:calc(var(--h,230px) - 84px);max-width:calc(100% - 4px);overflow:hidden;text-align:center;overflow-wrap:anywhere}
 .spine.blank .a{writing-mode:vertical-rl;font-size:9px;letter-spacing:.08em;text-transform:uppercase;opacity:.85;max-height:50px;overflow:hidden}
 .spine .badge{position:absolute;top:13px;left:50%;transform:translateX(-50%);width:8px;height:8px;border-radius:50%;background:#fff;box-shadow:0 0 0 2px rgba(0,0,0,.4)}
 
@@ -559,6 +559,13 @@ function render(){
 }
 
 /* ---------- spines ---------- */
+/* Shrinks a blank spine's title so it fits: one line down the spine if it can, two side by side on wider spines. */
+function titleFit(title,w){
+  const n=Math.max(4,String(title||"").length), L="(var(--h,230px) - 84px)";
+  const one=`calc(${L} / ${(n*0.58).toFixed(2)})`;
+  const two=w>=30?`, min(calc(${L} * 2 / ${(n*0.64).toFixed(2)}), ${((w-6)/2.3).toFixed(1)}px)`:"";
+  return `clamp(7px, max(${one}${two}), 14px)`;
+}
 function spineHTML(b){
   const pages=Number(b.pages)||320;
   const badge=b.status==="reading"?`<span class="badge" title="Currently reading"></span>`:"";
@@ -570,7 +577,7 @@ function spineHTML(b){
   const w=Math.max(24,Math.min(54,Math.round(pages/9)));
   let h=0; for(const ch of String(b.id)) h=(h*31+ch.charCodeAt(0))>>>0;
   const shadeMix=[0,8,16,-8,-14][h%5], sg=shadeMix>0?`color-mix(in srgb,${genreColor(b.genre)} ${100-shadeMix}%,#fff)`:shadeMix<0?`color-mix(in srgb,${genreColor(b.genre)} ${100+shadeMix}%,#000)`:genreColor(b.genre);
-  return `<button class="spine blank b${(h>>3)%4}" type="button" data-open="${esc(b.id)}" style="width:${w}px;--g:${genreColor(b.genre)};--sg:${sg}" aria-label="${label}" title="${label}"><span class="t">${esc(b.title)}</span><span class="a">${esc(lastName(b.author))}</span>${badge}</button>`;
+  return `<button class="spine blank b${(h>>3)%4}" type="button" data-open="${esc(b.id)}" style="width:${w}px;--g:${genreColor(b.genre)};--sg:${sg}" aria-label="${label}" title="${label}"><span class="t" style="font-size:${titleFit(b.title,w)}">${esc(b.title)}</span><span class="a">${esc(lastName(b.author))}</span>${badge}</button>`;
 }
 function filterSearch(list,q){ q=norm(q); return q?list.filter(b=>norm(b.title+" "+b.author+" "+b.genre+" "+(b.tropes||[]).join(" ")+" "+b.seriesName).includes(q)):list; }
 function sortSelect(id,val){ return `<select class="sel" id="${id}" aria-label="Sort books">${[["author","Author"],["title","Title"],["genre","Genre"],["sheet","Sheet order"],["pages","Page count"]].map(([k,l])=>`<option value="${k}" ${val===k?"selected":""}>Sort: ${l}</option>`).join("")}</select>`; }
