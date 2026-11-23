@@ -559,6 +559,22 @@ function render(){
 }
 
 /* ---------- spines ---------- */
+const APP_VERSION="Nov 23 · spine fit 3";
+/* Measures each blank spine and sizes its title to one line that fits, so it works in every browser. */
+let fitCtx=null;
+function fitSpineTitles(root){
+  const ts=[...(root||document).querySelectorAll(".spine.blank .t")]; if(!ts.length) return;
+  fitCtx=fitCtx||document.createElement("canvas").getContext("2d");
+  const fam=getComputedStyle(ts[0]).fontFamily; fitCtx.font=`100px ${fam}`;
+  const room=ts.map(t=>t.parentElement.clientHeight-72);
+  ts.forEach((t,i)=>{ const w=fitCtx.measureText(t.textContent).width/100; if(!w||room[i]<=0) return;
+    t.style.fontSize=Math.max(6,Math.min(14,(room[i]-4)/w)).toFixed(2)+"px"; });
+}
+let fitQueued=false;
+function queueFit(){ if(fitQueued) return; fitQueued=true; requestAnimationFrame(()=>{fitQueued=false; fitSpineTitles();}); }
+new MutationObserver(ms=>{ if(ms.some(m=>[...m.addedNodes].some(n=>n.nodeType===1&&(n.matches?.(".spine.blank")||n.querySelector?.(".spine.blank"))))) queueFit(); }).observe(document.documentElement,{childList:true,subtree:true});
+addEventListener("resize",queueFit);
+document.fonts?.ready?.then(queueFit);
 /* Shrinks a blank spine's title so it fits on one line down the spine. */
 function titleFit(title){
   const n=Math.max(4,String(title||"").length);
@@ -2065,7 +2081,7 @@ function showAuth(message){
 }
 function renderSettings(){
   const s = SETTINGS.sheets || {};
-  return `<div class="view-head"><h1>Settings</h1></div>
+  return `<div class="view-head"><div><h1>Settings</h1><p class="sub">App version ${APP_VERSION}</p></div></div>
   <section class="settings">
     <h2>Connect your sheet</h2>
     <ol class="steps">
