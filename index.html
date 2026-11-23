@@ -559,7 +559,13 @@ function render(){
 }
 
 /* ---------- spines ---------- */
-const APP_VERSION="Nov 23 · spine fit 4";
+const APP_VERSION="Nov 23 · spine fit 5";
+/* Phones keep an old copy of the page for a while. On open, fetch a fresh copy; if it is a newer version, reload once into it. */
+(async()=>{ try{
+  const r=await fetch(location.pathname+location.search,{cache:"reload"}); if(!r.ok) return;
+  const v=((await r.text()).match(/const APP_VERSION="([^"]+)"/)||[])[1];
+  if(v&&v!==APP_VERSION&&sessionStorage.getItem("gl-reloaded")!==v){ sessionStorage.setItem("gl-reloaded",v); location.reload(); }
+}catch(_){} })();
 /* Measures each blank spine and sizes its title so the whole title shows: one line if it fits, otherwise two. */
 let fitCtx=null;
 function fitSpineTitles(root){
