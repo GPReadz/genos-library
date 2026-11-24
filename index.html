@@ -559,35 +559,48 @@ function render(){
 }
 
 /* ---------- spines ---------- */
-const APP_VERSION="Nov 23 · movie & album posts";
+const APP_VERSION="Nov 24 · spine fit 6";
 /* Phones keep an old copy of the page for a while. On open, fetch a fresh copy; if it is a newer version, reload once into it. */
 (async()=>{ try{
   const r=await fetch(location.pathname+location.search,{cache:"reload"}); if(!r.ok) return;
   const v=((await r.text()).match(/const APP_VERSION="([^"]+)"/)||[])[1];
   if(v&&v!==APP_VERSION&&sessionStorage.getItem("gl-reloaded")!==v){ sessionStorage.setItem("gl-reloaded",v); location.reload(); }
 }catch(_){} })();
-/* Measures each blank spine and sizes its title so the whole title shows: one line if it fits, otherwise two. */
+/* Measures each blank spine and sizes its title so the whole title shows: one line if it fits, otherwise two.
+   Then checks the real layout and shrinks any title that still spills, since phones render text a little differently. */
 let fitCtx=null;
+const fitWatch=typeof ResizeObserver==="function"?new ResizeObserver(es=>{ let any=false; for(const e of es){ if(e.contentRect.height>0){ fitWatch.unobserve(e.target); any=true; } } if(any) queueFit(); }):null;
+function spills(t){ return t.scrollHeight>t.clientHeight+1||t.scrollWidth>t.clientWidth+1; }
 function fitSpineTitles(root){
   const ts=[...(root||document).querySelectorAll(".spine.blank .t")]; if(!ts.length) return;
   fitCtx=fitCtx||document.createElement("canvas").getContext("2d");
   const fam=getComputedStyle(ts[0]).fontFamily; fitCtx.font=`100px ${fam}`;
+  if(document.fonts&&!document.fonts.check(`14px ${fam}`)) document.fonts.load(`14px ${fam}`).then(queueFit,()=>{});
   const space=fitCtx.measureText(" ").width/100;
   const boxes=ts.map(t=>[t.parentElement.clientHeight-72,t.parentElement.clientWidth-4]);
+  const sized=[];
   ts.forEach((t,i)=>{
-    const [room,across]=boxes[i]; if(room<=0||across<=0) return;
+    const [room,across]=boxes[i];
+    if(room<=0||across<=0){ if(fitWatch) fitWatch.observe(t.parentElement); return; }
     const words=t.textContent.trim().split(/\s+/).map(w=>fitCtx.measureText(w).width/100);
-    const lines=fs=>{ let n=1,cur=0; for(const w of words){ const add=(cur?space:0)+w; if(cur&&(cur+add)*fs>room*0.96){ n++; cur=w; } else cur+=add; if(w*fs>room*0.96) return 99; } return n; };
-    let best=4, n=2;
-    for(let fs=14; fs>=4; fs-=0.25){ const k=lines(fs); if(k<=2 && k*fs*1.08<=across){ best=fs; n=k; break; } }
-    t.style.fontSize=best.toFixed(2)+"px"; t.classList.toggle("two",n===2);
+    const lines=fs=>{ let n=1,cur=0; for(const w of words){ const add=(cur?space:0)+w; if(cur&&(cur+add)*fs>room*0.94){ n++; cur=w; } else cur+=add; if(w*fs>room*0.94) return 99; } return n; };
+    let best=4;
+    for(let fs=14; fs>=4; fs-=0.25){ const k=lines(fs); if(k<=2 && k*fs*1.1<=across){ best=fs; break; } }
+    t.style.fontSize=best.toFixed(2)+"px"; sized.push([t,best]);
   });
+  // Check what the browser actually drew; shrink any that still spill (all reads, then all writes, each round).
+  let todo=sized;
+  for(let round=0; round<12&&todo.length; round++){
+    const over=todo.filter(([t])=>spills(t));
+    todo=over.map(([t,fs])=>{ const n=Math.max(3.5,fs*0.92); t.style.fontSize=n.toFixed(2)+"px"; return [t,n]; }).filter(([,fs])=>fs>3.5);
+  }
 }
 let fitQueued=false;
 function queueFit(){ if(fitQueued) return; fitQueued=true; requestAnimationFrame(()=>{fitQueued=false; fitSpineTitles();}); }
 new MutationObserver(ms=>{ if(ms.some(m=>[...m.addedNodes].some(n=>n.nodeType===1&&(n.matches?.(".spine.blank")||n.querySelector?.(".spine.blank"))))) queueFit(); }).observe(document.documentElement,{childList:true,subtree:true});
 addEventListener("resize",queueFit);
 document.fonts?.ready?.then(queueFit);
+document.fonts?.addEventListener?.("loadingdone",queueFit);
 /* Shrinks a blank spine's title so it fits on one line down the spine. */
 function titleFit(title){
   const n=Math.max(4,String(title||"").length);
