@@ -559,7 +559,7 @@ function render(){
 }
 
 /* ---------- spines ---------- */
-const APP_VERSION="Nov 23 · post quote";
+const APP_VERSION="Nov 23 · movie & album posts";
 /* Phones keep an old copy of the page for a while. On open, fetch a fresh copy; if it is a newer version, reload once into it. */
 (async()=>{ try{
   const r=await fetch(location.pathname+location.search,{cache:"reload"}); if(!r.ok) return;
@@ -711,6 +711,8 @@ function wire(){
   on("[data-pick]",el=>openPicker(el.dataset.pick||""));
   on("[data-wopen]",el=>openWatchDetail(el.dataset.wopen));
   on("[data-wedit]",el=>openWatchEdit(getWatch(el.dataset.wedit)));
+  on("[data-wpost]",el=>openPost(getWatch(el.dataset.wpost),"watch"));
+  on("[data-lpost]",el=>openPost(getAlbum(el.dataset.lpost),"album"));
   on("[data-lopen]",el=>openAlbumDetail(el.dataset.lopen));
   on("[data-ledit]",el=>openAlbumEdit(getAlbum(el.dataset.ledit)));
   on("[data-wimport]",()=>refreshSheets());
@@ -1128,30 +1130,149 @@ async function drawPost(c,b){
   const facts=[...(b.tropes||[]).slice(0,3)]; if(b.ending) facts.push(b.ending); if(b.burn&&!facts.some(f=>norm(f)===norm(b.burn))) facts.push(b.burn);
   if(facts.length){ x.font='500 28px "Figtree", sans-serif'; x.fillStyle="rgba(255,255,255,.8)"; wrapLines(x,facts.join("  ·  "),W-160).slice(0,2).forEach(l=>{x.fillText(l,W/2,y);y+=40;}); }
 }
-function openPost(b){
+
+/* ---------- Movie & album posts ---------- */
+function starRow(x,W,y,r,size,on,off){
+  const gap=Math.round(size*0.28),total=size*5+gap*4; let sx=(W-total)/2;
+  for(let i=0;i<5;i++){
+    const path=new Path2D(); starPts(sx+size/2,y,size/2,size/4.6).forEach((p,j)=>j?path.lineTo(p[0],p[1]):path.moveTo(p[0],p[1])); path.closePath();
+    x.fillStyle=off; x.fill(path);
+    const fill=Math.max(0,Math.min(1,r-i)); if(fill>0){x.save();x.beginPath();x.rect(sx,y-size/2,size*fill,size);x.clip();x.fillStyle=on;x.fill(path);x.restore();}
+    sx+=size+gap;
+  }
+}
+function spaced(t){ return String(t).toUpperCase().split("").join(String.fromCharCode(8202)); }
+async function postFonts(){ try{ await Promise.all([document.fonts.load('70px "Gloock"'),document.fonts.load('500 30px "Figtree"'),document.fonts.load('600 30px "Figtree"'),document.fonts.load('700 26px "Figtree"')]); }catch(_){} }
+function isShow(m){ return /show|series|season/i.test(m.type||""); }
+function watchCaption(m){
+  const r=Number(m.rating)||0, stars=r?("★".repeat(Math.floor(r))+(r%1>=0.5?"½":"")+` (${r}/5)`):"";
+  const parts=[`${m.title}${m.year?` (${m.year})`:""}`];
+  const meta=[m.type,m.genre].filter(Boolean).join(" · "); if(meta) parts.push(meta);
+  if(stars) parts.push(stars);
+  if(/^y/i.test(m.rewatch||"")) parts.push("Would rewatch");
+  if(m.review) parts.push("",m.review);
+  if(m.watchedOn) parts.push("","Watched on "+m.watchedOn);
+  const tags=["#genoslibrary",isShow(m)?"#tvreview":"#moviereview",isShow(m)?"#bingewatch":"#movienight","#whattowatch"];
+  String(m.genre||"").split(/[,/]/).map(g=>g.trim()).filter(Boolean).slice(0,2).forEach(g=>tags.push("#"+g.toLowerCase().replace(/[^a-z0-9]/g,"")+(isShow(m)?"shows":"movies")));
+  parts.push("",[...new Set(tags)].join(" "));
+  return parts.join("\n");
+}
+function albumCaption(a){
+  const r=Number(a.rating)||0, stars=r?("★".repeat(Math.floor(r))+(r%1>=0.5?"½":"")+` (${r}/5)`):"";
+  const parts=[`${a.title}${a.artist?" by "+a.artist:""}`];
+  if(a.genre) parts.push(`Genre: ${a.genre}`);
+  if(stars) parts.push(stars);
+  if(a.favTrack) parts.push(`Favorite track: ${a.favTrack}`);
+  if(a.review) parts.push("",a.review);
+  const tags=["#genoslibrary","#albumreview","#nowplaying","#musicreview"];
+  String(a.genre||"").split(/[,/]/).map(g=>g.trim()).filter(Boolean).slice(0,2).forEach(g=>tags.push("#"+g.toLowerCase().replace(/[^a-z0-9]/g,"")+"music"));
+  if(a.artist) tags.push("#"+a.artist.toLowerCase().replace(/[^a-z0-9]/g,""));
+  parts.push("",[...new Set(tags)].join(" "));
+  return parts.join("\n");
+}
+/* Movies & shows: a late-night VHS look — dark screen, scanlines, a tape label for the title. */
+async function drawWatchPost(c,m){
+  const W=1080,H=1350; c.width=W; c.height=H; const x=c.getContext("2d"); const col=watchColor(m.genre);
+  await postFonts();
+  const g=x.createLinearGradient(0,0,0,H); g.addColorStop(0,shade(col,-0.62)); g.addColorStop(1,"#0b0a0c"); x.fillStyle=g; x.fillRect(0,0,W,H);
+  x.fillStyle="rgba(255,255,255,.035)"; for(let yy=0;yy<H;yy+=4) x.fillRect(0,yy,W,1);
+  // VCR readout
+  x.textAlign="left"; x.font='700 26px "Figtree", sans-serif'; x.fillStyle="#7CF29A"; x.fillText("▶ PLAY",60,78);
+  x.textAlign="right"; x.fillStyle="#FF5A5A"; x.fillText("● REC",W-60,78);
+  x.textAlign="center"; x.fillStyle="rgba(255,255,255,.8)"; x.font='600 24px "Figtree", sans-serif'; x.fillText(spaced("Geno's Library"),W/2,78);
+  let img=null; try{ if(m.posterId) img=await loadImg(blob(m.posterId)); }catch(_){ img=null; }
+  const top=130, ph=690, pw=460, px=(W-pw)/2;
+  if(img){
+    const s=Math.max(pw/img.width,ph/img.height), w=img.width*s, h=img.height*s;
+    x.save(); x.shadowColor="rgba(0,0,0,.6)"; x.shadowBlur=44; x.shadowOffsetY=20; x.fillStyle="#000"; x.fillRect(px,top,pw,ph); x.restore();
+    x.save(); x.beginPath(); x.rect(px,top,pw,ph); x.clip(); x.drawImage(img,px+(pw-w)/2,top+(ph-h)/2,w,h); x.restore();
+  }else{
+    x.fillStyle=shade(col,-0.25); x.fillRect(px,top,pw,ph);
+    for(let i=0;i<4;i++){ x.fillStyle=shade(col,0.15+i*0.15); x.fillRect(px,top+ph-150+i*30,pw,18); }
+    x.fillStyle="#fff"; x.font='50px "Gloock", serif'; wrapLines(x,m.title,pw-60).slice(0,5).forEach((l,i)=>x.fillText(l,W/2,top+150+i*60));
+  }
+  x.strokeStyle="rgba(255,255,255,.85)"; x.lineWidth=3; x.strokeRect(px-14,top-14,pw+28,ph+28);
+  // Tape label
+  let y=top+ph+60; const lw=W-160, lx=80;
+  x.font='60px "Gloock", serif'; let tl=wrapLines(x,m.title,lw-150).slice(0,2); let fs=60;
+  if(tl.length>1){ fs=48; x.font='48px "Gloock", serif'; tl=wrapLines(x,m.title,lw-150).slice(0,2); }
+  const lh=tl.length*Math.round(fs*1.1)+76;
+  x.beginPath(); x.roundRect(lx,y,lw,lh,10); x.fillStyle="#F4EFE6"; x.fill();
+  x.save(); x.beginPath(); x.roundRect(lx,y,lw,lh,10); x.clip();
+  [0,1,2].forEach(i=>{ x.fillStyle=shade(col,i*0.22-0.05); x.fillRect(lx,y+i*(lh/3),62,lh/3+1); }); x.restore();
+  x.fillStyle="#1b1717"; x.font=`${fs}px "Gloock", serif`; tl.forEach((l,i)=>x.fillText(l,W/2+30,y+20+fs+i*Math.round(fs*1.1)));
+  x.font='700 22px "Figtree", sans-serif'; x.fillStyle=shade(col,-0.4);
+  x.fillText(spaced([isShow(m)?"TV Show":(m.type||"Movie"),m.year,m.runtime].filter(Boolean).join("  ·  ")),W/2+30,y+lh-22,lw-120);
+  y+=lh+78;
+  const r=Number(m.rating)||0;
+  if(r){ starRow(x,W,y,r,58,"#F3D99A","rgba(255,255,255,.18)"); y+=62; x.font='600 28px "Figtree", sans-serif'; x.fillStyle="#fff"; x.fillText(`${r} / 5`,W/2,y); y+=56; }
+  const bits=[]; if(m.genre) bits.push(m.genre); if(/^y/i.test(m.rewatch||"")) bits.push("Would rewatch"); if(m.watchedOn) bits.push("Watched on "+m.watchedOn);
+  if(bits.length){ x.font='500 28px "Figtree", sans-serif'; x.fillStyle="rgba(255,255,255,.78)"; wrapLines(x,bits.join("  ·  "),W-160).slice(0,2).forEach(l=>{x.fillText(l,W/2,y);y+=40;}); }
+}
+/* Albums: a light record-shop look — the sleeve with the vinyl sliding out of it. */
+async function drawAlbumPost(c,a){
+  const W=1080,H=1350; c.width=W; c.height=H; const x=c.getContext("2d"); const col=musicColor(a.genre);
+  await postFonts();
+  const g=x.createLinearGradient(0,0,0,H); g.addColorStop(0,shade(col,0.86)); g.addColorStop(1,shade(col,0.7)); x.fillStyle=g; x.fillRect(0,0,W,H);
+  x.textAlign="center"; x.fillStyle=shade(col,-0.55); x.font='600 24px "Figtree", sans-serif'; x.fillText(spaced("Geno's Library · On Repeat"),W/2,78);
+  let img=null; try{ if(a.coverId) img=await loadImg(blob(a.coverId)); }catch(_){ img=null; }
+  const S=600, sx=110, sy=130, cx=sx+S+20, cy=sy+S/2, R=S/2-10;
+  // Record
+  x.save(); x.shadowColor="rgba(0,0,0,.35)"; x.shadowBlur=30; x.shadowOffsetY=12;
+  x.beginPath(); x.arc(cx,cy,R,0,Math.PI*2); x.fillStyle="#141414"; x.fill(); x.restore();
+  x.strokeStyle="rgba(255,255,255,.06)"; x.lineWidth=2; for(let rr=R-14; rr>R*0.4; rr-=9){ x.beginPath(); x.arc(cx,cy,rr,0,Math.PI*2); x.stroke(); }
+  x.save(); x.beginPath(); x.arc(cx,cy,R,-0.9,-0.4); x.lineTo(cx,cy); x.closePath(); x.clip(); x.fillStyle="rgba(255,255,255,.07)"; x.fillRect(cx-R,cy-R,R*2,R*2); x.restore();
+  x.save(); x.beginPath(); x.arc(cx,cy,R*0.33,0,Math.PI*2); x.clip();
+  if(img){ const s2=(R*0.66)/Math.min(img.width,img.height); x.drawImage(img,cx-img.width*s2/2,cy-img.height*s2/2,img.width*s2,img.height*s2); } else { x.fillStyle=col; x.fillRect(cx-R,cy-R,R*2,R*2); }
+  x.restore(); x.beginPath(); x.arc(cx,cy,9,0,Math.PI*2); x.fillStyle=shade(col,0.8); x.fill();
+  // Sleeve
+  x.save(); x.shadowColor="rgba(0,0,0,.35)"; x.shadowBlur=36; x.shadowOffsetY=16; x.fillStyle="#fff"; x.fillRect(sx,sy,S,S); x.restore();
+  if(img){ const s=Math.max(S/img.width,S/img.height); x.save(); x.beginPath(); x.rect(sx,sy,S,S); x.clip(); x.drawImage(img,sx+(S-img.width*s)/2,sy+(S-img.height*s)/2,img.width*s,img.height*s); x.restore(); }
+  else { x.fillStyle=col; x.fillRect(sx,sy,S,S); x.fillStyle="#fff"; x.textAlign="left"; x.font='600 30px "Figtree", sans-serif'; x.fillText(String(a.artist||"").slice(0,30),sx+40,sy+80);
+    x.font='56px "Gloock", serif'; wrapLines(x,a.title,S-80).slice(0,4).forEach((l,i)=>x.fillText(l,sx+40,sy+S-60-(Math.min(4,wrapLines(x,a.title,S-80).length)-1-i)*64)); x.textAlign="center"; }
+  let y=sy+S+110; const ink=shade(col,-0.7);
+  x.fillStyle=ink; x.font='66px "Gloock", serif'; wrapLines(x,a.title,W-140).slice(0,2).forEach(l=>{x.fillText(l,W/2,y);y+=74;});
+  x.font='500 34px "Figtree", sans-serif'; x.fillStyle=shade(col,-0.5); if(a.artist) x.fillText(a.artist,W/2,y); y+=68;
+  if(a.genre){ x.font='700 24px "Figtree", sans-serif'; const label=spaced(a.genre); const tw=Math.min(x.measureText(label).width,W-200), ph=48, pw=tw+56;
+    x.beginPath(); x.roundRect((W-pw)/2,y-36,pw,ph,ph/2); x.fillStyle=col; x.fill(); x.fillStyle="#fff"; x.fillText(label,W/2,y-3,W-200); y+=78; }
+  const r=Number(a.rating)||0;
+  if(r){ starRow(x,W,y,r,56,shade(col,-0.25),"rgba(0,0,0,.12)"); y+=60; x.font='600 28px "Figtree", sans-serif'; x.fillStyle=ink; x.fillText(`${r} / 5`,W/2,y); y+=58; }
+  if(a.favTrack){ x.font='600 30px "Figtree", sans-serif'; const t="♪  Favorite track: "+a.favTrack; const tw=Math.min(x.measureText(t).width,W-220), ph=58, pw=tw+60;
+    x.beginPath(); x.roundRect((W-pw)/2,y-40,pw,ph,ph/2); x.fillStyle="rgba(255,255,255,.7)"; x.fill(); x.fillStyle=ink; x.fillText(t,W/2,y-1,W-220); y+=70; }
+  const bits=[a.tracks?`${a.tracks} tracks`:"",a.length].filter(Boolean);
+  if(bits.length){ x.font='500 26px "Figtree", sans-serif'; x.fillStyle=shade(col,-0.45); x.fillText(bits.join("  ·  "),W/2,y); }
+}
+function openPost(b,kind="book"){
   if(!b) return;
-  const ov=modal(`<h2>Bookstagram post</h2>
+  const cap0=kind==="watch"?watchCaption(b):kind==="album"?albumCaption(b):caption(b);
+  const draw=(c,x)=>kind==="watch"?drawWatchPost(c,x):kind==="album"?drawAlbumPost(c,x):drawPost(c,x);
+  const ov=modal(`<h2>${kind==="watch"?"Movie &amp; show post":kind==="album"?"Album post":"Bookstagram post"}</h2>
   <div class="post-wrap"><canvas id="pc" aria-label="Post image preview"></canvas>
   <div style="display:flex;flex-direction:column;gap:10px">
-    <label class="f">Quote from the book<textarea id="pq" style="min-height:80px" placeholder="Type or paste a line you loved. It shows on the image and in the caption.">${esc(b.quote)}</textarea></label>
-    <label class="f">Caption<textarea id="cap" style="min-height:260px">${esc(caption(b))}</textarea></label>
+    ${kind==="book"?`<label class="f">Quote from the book<textarea id="pq" style="min-height:80px" placeholder="Type or paste a line you loved. It shows on the image and in the caption.">${esc(b.quote)}</textarea></label>`:""}
+    <label class="f">Caption<textarea id="cap" style="min-height:${kind==="book"?260:320}px">${esc(cap0)}</textarea></label>
     <span class="hint">Edit the caption before copying. It doesn't change your saved review.</span>
   </div></div>
   <div class="foot"><span class="err" id="err"></span><button class="btn ghost" type="button" id="cancel">Close</button><button class="btn" type="button" id="copy">Copy caption</button><button class="btn primary" type="button" id="dl">Save image</button></div>`);
   const c=ov.querySelector("#pc");
-  (async()=>{ if(!b.coverId){ const u=await findCover("book",b); if(u) b={...b,coverId:u}; } drawPost(c,b); })();
-  // Quote: redraw as you type, keep the caption in step unless you've edited it, and save it to the book.
+  (async()=>{
+    if(kind==="book"&&!b.coverId){ const u=await findCover("book",b); if(u) b={...b,coverId:u}; }
+    if(kind==="album"&&!b.coverId){ const u=autoCovers.get("album:"+b.id)||await findCover("album",b); if(u) b={...b,coverId:u}; }
+    draw(c,b); })();
   const pq=ov.querySelector("#pq"), cap=ov.querySelector("#cap"); let capEdited=false, qTimer=null;
   cap.addEventListener("input",()=>{capEdited=true;});
+  if(pq){
+  // Quote: redraw as you type, keep the caption in step unless you've edited it, and save it to the book.
   pq.addEventListener("input",()=>{ clearTimeout(qTimer); qTimer=setTimeout(()=>{ b={...b,quote:pq.value.trim()}; drawPost(c,b); if(!capEdited) cap.value=caption(b); },250); });
   pq.addEventListener("change",async()=>{ const v=pq.value.trim(); try{ await patchUser(b.id,{quote:v||null}); }catch(_){ ov.querySelector("#err").textContent="Couldn't save the quote to the book, but it's on this post."; } });
+  }
   ov.querySelector("#cancel").addEventListener("click",close);
   ov.querySelector("#copy").addEventListener("click",async()=>{const t=ov.querySelector("#cap");try{await navigator.clipboard.writeText(t.value);ov.querySelector("#copy").textContent="Copied";}catch(_){t.select();ov.querySelector("#err").textContent="The caption is selected. Copy it with your keyboard or a long-press.";}});
   const dlb=ov.querySelector("#dl");
   if(dlb) dlb.addEventListener("click",async()=>{
     let data=null; try{ data=await new Promise(res=>c.toBlob(res,"image/png")); }catch(_){ data=null; }
     const name=(b.title||"post").replace(/[^\w\- ]+/g,"").trim().replace(/\s+/g,"-").toLowerCase()+"-review.png";
-    if(!data){ ov.querySelector("#err").textContent="This cover's website doesn't allow saving it into an image. Take a screenshot instead, or upload the cover with Edit."; return; }
+    if(!data){ ov.querySelector("#err").textContent=`This ${kind==="watch"?"poster":kind==="album"?"album art":"cover"}'s website doesn't allow saving it into an image. Take a screenshot instead, or upload it with Edit.`; return; }
     const file=new File([data],name,{type:"image/png"});
     try{
       if(navigator.canShare&&navigator.canShare({files:[file]})){ await navigator.share({files:[file],text:ov.querySelector("#cap").value}); dlb.textContent="Shared"; return; }
@@ -1301,7 +1422,7 @@ function renderWatched(){
     <div class="pc-body"><h3>${esc(m.title)}</h3><p class="meta">${[m.type,m.year,m.watchedOn].filter(Boolean).map(esc).join(" · ")}</p>
     ${Number(m.rating)>0?starsSVG(Number(m.rating),15):`<span class="meta">Not rated yet</span>`}${/^y/i.test(m.rewatch)?` <span class="pill read" style="margin-left:6px">Rewatch</span>`:""}
     <p class="rev">${m.review?esc(m.review):"<span class='meta'>No notes yet.</span>"}</p>
-    <button class="btn small" type="button" data-wedit="${esc(m.id)}">${m.review?"Edit notes":"Rate &amp; review"}</button></div></article>`).join("")+`</div>`;
+    <div class="row" style="margin-top:10px"><button class="btn small primary" type="button" data-wpost="${esc(m.id)}">Post</button><button class="btn small" type="button" data-wedit="${esc(m.id)}">${m.review?"Edit notes":"Rate &amp; review"}</button></div></div></article>`).join("")+`</div>`;
   if(seen.length>ui.listLimit) out+=`<div class="more"><button class="btn" type="button" id="more-list">Show more</button></div>`;
   return out;
 }
@@ -1317,10 +1438,11 @@ function openWatchDetail(id){
       <p class="syn-h">Description</p><p class="syn">${m.description?esc(m.description):'<span class="meta">No description in your sheet for this one.</span>'}</p></div></div>
     <div class="foot"><span class="err" id="err"></span><button class="btn ghost left" type="button" id="close">Close</button>
       ${m.status==="want"?`<button class="btn" type="button" id="start">Start watching</button>`:""}
-      ${m.status!=="seen"?`<button class="btn" type="button" id="done">Mark as watched</button>`:""}
+      ${m.status!=="seen"?`<button class="btn" type="button" id="done">Mark as watched</button>`:`<button class="btn" type="button" id="post">Post</button>`}
       <button class="btn primary" type="button" id="edit" data-autofocus>${m.status==="seen"?"Edit, rate & review":"Edit & add photos"}</button></div>`);
   ov.querySelector("#close").addEventListener("click",close);
   ov.querySelector("#edit").addEventListener("click",()=>openWatchEdit(getWatch(id)));
+  const wp=ov.querySelector("#post"); if(wp) wp.addEventListener("click",()=>openPost(getWatch(id),"watch"));
   const q=async(f,then)=>{ try{ await patchLayer("watch",id,wuser,f); then&&then(); }catch(_){ ov.querySelector("#err").textContent="Couldn't save. Check your connection and try again."; } };
   const st=ov.querySelector("#start"); if(st) st.addEventListener("click",()=>q({status:"watching"},()=>openWatchDetail(id)));
   const dn=ov.querySelector("#done"); if(dn) dn.addEventListener("click",()=>q({status:"seen",finished:m.finished||new Date().toISOString().slice(0,10)},()=>openWatchEdit(getWatch(id))));
@@ -1419,7 +1541,7 @@ function renderListened(){
     <div><h3>${esc(a.title)}</h3><p class="meta">${esc(a.artist)}${a.genre?" · "+esc(a.genre):""}</p>${Number(a.rating)>0?starsSVG(Number(a.rating),14):`<span class="meta">Not rated</span>`}
     ${a.favTrack?`<p class="meta" style="margin-top:6px">Favorite track: <b style="color:var(--text)">${esc(a.favTrack)}</b></p>`:""}
     ${a.review?`<p class="rev">${esc(a.review)}</p>`:""}
-    <button class="btn small" type="button" data-ledit="${esc(a.id)}" style="margin-top:8px">${a.rating?"Edit":"Rate"}</button></div></article>`).join("")+`</div>`;
+    <div class="row" style="margin-top:8px"><button class="btn small primary" type="button" data-lpost="${esc(a.id)}">Post</button><button class="btn small" type="button" data-ledit="${esc(a.id)}">${a.rating?"Edit":"Rate"}</button></div></div></article>`).join("")+`</div>`;
   if(done.length>ui.listLimit) out+=`<div class="more"><button class="btn" type="button" id="more-list">Show more</button></div>`;
   return out;
 }
@@ -1439,11 +1561,12 @@ function openAlbumDetail(id){
       ${a.coverId?"":`<p class="cover-note" style="text-align:left">No album art yet. Add it with Edit.</p>`}</div></div>
     <div class="foot"><span class="err" id="err"></span><button class="btn ghost left" type="button" id="close">Close</button>
       ${a.status!=="listened"&&a.status!=="listening"?`<button class="btn" type="button" id="nowl">Now listening</button>`:""}
-      ${a.status!=="listened"?`<button class="btn" type="button" id="done">Mark as listened</button>`:""}
+      ${a.status!=="listened"?`<button class="btn" type="button" id="done">Mark as listened</button>`:`<button class="btn" type="button" id="post">Post</button>`}
       <button class="btn primary" type="button" id="edit" data-autofocus>${a.status==="listened"?"Edit & rate":"Edit & add album art"}</button></div>`);
   const nl=ov.querySelector("#nowl"); if(nl) nl.addEventListener("click",async()=>{ try{ await startListening(id); openAlbumDetail(id); }catch(_){ ov.querySelector("#err").textContent="Couldn't save. Check your connection and try again."; } });
   ov.querySelector("#close").addEventListener("click",close);
   ov.querySelector("#edit").addEventListener("click",()=>openAlbumEdit(getAlbum(id)));
+  const lp=ov.querySelector("#post"); if(lp) lp.addEventListener("click",()=>openPost(getAlbum(id),"album"));
   if(!a.coverId) findCover("album",a).then(url=>{ if(!url) return; const sl=ov.querySelector(".sleeve.big"); if(sl){ sl.classList.add("has"); sl.innerHTML=`<img src="${esc(url)}" alt="">`; } const lb=ov.querySelector(".turntable .lbl"); if(lb) lb.style.backgroundImage=`url("${url}")`; const n=ov.querySelector(".cover-note"); if(n) n.textContent="Found automatically. Wrong cover? Paste a link in your sheet's Cover URL column, or upload one with Edit."; });
   const dn=ov.querySelector("#done"); if(dn) dn.addEventListener("click",async()=>{ try{ await patchLayer("albums",id,luser,{status:"listened",listenedOn:new Date().toISOString().slice(0,10)}); openAlbumEdit(getAlbum(id)); }catch(_){ ov.querySelector("#err").textContent="Couldn't save. Check your connection and try again."; } });
 }
