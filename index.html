@@ -397,6 +397,7 @@ const PALETTE = [
   {name:"Young Adult", color:"#5E7E1E"},
   {name:"Fiction", color:"#8B7907"},
   {name:"Queer Fiction", color:"#B23A72"},
+  {name:"Nonfiction", color:"#4E7A96"},
   {name:"MM Romance", color:"#9B1B2F"},
   {name:"MM Sports Romance", color:"#14469F"},
   {name:"MM College Romance", color:"#AF790E"},
@@ -438,20 +439,24 @@ const GENRE_ALIASES = {
   "MM Dark Romance": ["mm crime romance","mm mafia romance","mm mystery romance","mm thriller romance"],
   "MM Cowboy Romance": ["mm historical romance"],
   "Queer Fiction": ["queer"],
+  "Nonfiction": ["non-fiction","non fiction","memoir","biography","autobiography","essays","self-help","true crime"],
   "Fiction": ["poetry","thriller","mystery","dystopia","graphic novel","fantasy","sci-fi","horror"],
   "MM Fantasy Romance": ["mm paranormal romance","mm superhero romance","mm sci-fi romance","mm scifi romance","mm science fiction romance"]
 };
+const isNonfiction=g=>genreNames("Nonfiction").some(n=>norm(g).includes(n));
 function genreNames(name){ return [norm(name), ...(GENRE_ALIASES[name]||[]).map(norm)]; }
 function genreColor(genre){
   const g=norm(genre); if(!g) return NEUTRAL;
-  const rank=p=>p.name.startsWith("MM")?100+p.name.length:p.name.length;
+  const rank=p=>p.name.startsWith("MM")?100+p.name.length:p.name==="Nonfiction"?99:p.name.length;
   const hit=[...PALETTE].sort((a,b)=>rank(b)-rank(a)).find(p=>genreNames(p.name).some(n=>g.includes(n)));
   return hit?hit.color:NEUTRAL;
 }
 function matches(shelf,b){
   const v=norm(shelf.value);
   switch(shelf.type){
-    case "genre": { if(!v) return false; const bg=norm(b.genre); const p=PALETTE.find(x=>norm(x.name)===v); return p ? genreNames(p.name).some(n=>bg.includes(n)) : bg.includes(v); }
+    case "genre": { if(!v) return false; const bg=norm(b.genre); const p=PALETTE.find(x=>norm(x.name)===v);
+      if(p&&p.name!=="Nonfiction"&&isNonfiction(bg)) return false; // "Nonfiction" contains "fiction"
+      return p ? genreNames(p.name).some(n=>bg.includes(n)) : bg.includes(v); }
     case "trope": return (b.tropes||[]).some(t=>norm(t)===v);
     case "series": return !!v && norm(b.seriesName)===v;
     case "burn": return norm(b.burn)===v;
@@ -563,7 +568,7 @@ function render(){
 }
 
 /* ---------- spines ---------- */
-const APP_VERSION="Nov 24 · series order";
+const APP_VERSION="Nov 24 · nonfiction color";
 /* Phones keep an old copy of the page for a while. On open, fetch a fresh copy; if it is a newer version, reload once into it. */
 (async()=>{ try{
   const r=await fetch(location.pathname+location.search,{cache:"reload"}); if(!r.ok) return;
