@@ -415,7 +415,7 @@ const SHEET_FIELDS = ["title","author","pages","published","pov","seriesName","s
 const PAGE = 240;
 
 let db=null, assets=null, downloads=null, mcp=null;
-let catalog=new Map(), userDocs=new Map(), shelves=[], meta=null;
+let catalog=new Map(), userDocs=new Map(), shelves=[], meta=null, seriesTab=new Map();
 let catalogLoaded=false, userLoaded=false;
 let ALL=[], allDirty=true;
 const ui={seriesSearch:"", seriesSort:"name", seriesLimit:30, hideEmpty:true, filter:"all", search:"", sort:"author", limit:PAGE, caseSearch:"", caseSort:"author", caseLimit:PAGE, listLimit:200};
@@ -469,7 +469,8 @@ const SORTS={
   sheet:(a,b)=>(a.row??1e9)-(b.row??1e9),
   pages:(a,b)=>(Number(a.pages)||0)-(Number(b.pages)||0),
   // Series order: by publication date (the sheet has no book numbers), then title.
-  series:(a,b)=>{ const d=x=>{ const t=Date.parse(x.published||""); return isNaN(t)?Infinity:t; }; return (d(a)-d(b))||SORTS.title(a,b); }
+  // Series order: the sheet's Series tab when it lists the book, otherwise publication date, then title.
+  series:(a,b)=>{ const p=x=>{ const i=seriesPos(x); return i<0?Infinity:i; }; const d=x=>{ const t=Date.parse(x.published||""); return isNaN(t)?Infinity:t; }; return (p(a)-p(b))||(d(a)-d(b))||SORTS.title(a,b); }
 };
 function fmtDate(d){ if(!d) return ""; const t=new Date(d+"T12:00:00"); return isNaN(t)?d:t.toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"}); }
 function starPts(cx,cy,R,r){const p=[];for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5;const rad=i%2?r:R;p.push([cx+Math.cos(a)*rad,cy+Math.sin(a)*rad]);}return p;}
@@ -562,7 +563,7 @@ function render(){
 }
 
 /* ---------- spines ---------- */
-const APP_VERSION="Nov 24 · series shelves";
+const APP_VERSION="Nov 24 · series order";
 /* Phones keep an old copy of the page for a while. On open, fetch a fresh copy; if it is a newer version, reload once into it. */
 (async()=>{ try{
   const r=await fetch(location.pathname+location.search,{cache:"reload"}); if(!r.ok) return;
@@ -675,10 +676,12 @@ function renderCase(){
 /* ---------- series ---------- */
 function seriesGroups(){
   const m=new Map();
-  for(const b of books()){ const n=String(b.seriesName||"").trim(); if(!n) continue; const k=norm(n); if(!m.has(k)) m.set(k,{name:n,books:[]}); m.get(k).books.push(b); }
+  for(const b of books()){ const n=String(b.seriesName||"").trim(); if(!n) continue; const row=seriesRow(b); const k=norm(n)+"|"+(row?norm(row.author):""); if(!m.has(k)) m.set(k,{name:n,books:[],row}); m.get(k).books.push(b); }
   for(const g of m.values()){
     g.books.sort(SORTS.series);
-    g.total=Math.max(g.books.length,...g.books.map(b=>Number(b.seriesCount)||0));
+    const row=g.row;
+    g.total=Math.max(g.books.length,row?row.titles.length:0,...g.books.map(b=>Number(b.seriesCount)||0));
+    g.ordered=!!row;
     g.read=g.books.filter(b=>b.status==="read").length;
     g.authors=[...new Set(g.books.map(b=>b.author).filter(Boolean))];
     g.latest=Math.max(...g.books.map(b=>{const t=Date.parse(b.published||"");return isNaN(t)?0:t;}));
@@ -693,7 +696,7 @@ function renderSeries(){
   const by={name:(a,b)=>a.name.replace(/^(the|a|an)\s+/i,"").localeCompare(b.name.replace(/^(the|a|an)\s+/i,"")),size:(a,b)=>b.books.length-a.books.length||a.name.localeCompare(b.name),author:(a,b)=>lastName(a.authors[0]||"").localeCompare(lastName(b.authors[0]||""))||a.name.localeCompare(b.name),recent:(a,b)=>b.latest-a.latest};
   groups.sort(by[ui.seriesSort]||by.name);
   const shown=groups.slice(0,ui.seriesLimit);
-  let out=`<div class="view-head"><div><h1>Series</h1><p class="sub">${all.toLocaleString()} series with two or more books on your shelves, each in publication order</p></div>
+  let out=`<div class="view-head"><div><h1>Series</h1><p class="sub">${all.toLocaleString()} series with two or more books on your shelves, ${seriesTab.size?"in the order from your sheet's Series tab":"each in publication order"}</p></div>
     <div class="toolbar"><input class="search" id="q-series" type="search" placeholder="Search series, author or book" value="${esc(ui.seriesSearch)}" aria-label="Search series">
     <select class="sel" id="s-series" aria-label="Sort series">${[["name","Series name"],["author","Author"],["size","Most books"],["recent","Newest release"]].map(([k,l])=>`<option value="${k}" ${ui.seriesSort===k?"selected":""}>Sort: ${l}</option>`).join("")}</select></div></div>`;
   if(!groups.length) return out+`<div class="empty"><h2>${all?"No series match":"No series yet"}</h2><p>${all?"Try another search.":"Books with a series name in your sheet show up here once two or more share one."}</p></div>`;
@@ -995,7 +998,7 @@ function openShelf(s,preset){
     const t=typeEl.value; wrap.hidden=t==="manual";
     const opts={genre:PALETTE.map(p=>p.name),trope:tropes,series:seriesNames,burn:["Slow Burn","Fast Burn"],ending:["HEA","HFN"],status:Object.keys(STATUS)}[t]||[];
     dl.innerHTML=opts.map(o=>`<option value="${esc(o)}">`).join("");
-    hint.textContent={genre:"Books whose genre includes this. MM Romance also catches YA MM Romance.",trope:"Books tagged with this exact trope.",series:"Every book in this series, in publication order.",burn:"Slow Burn or Fast Burn",ending:"HEA or HFN",status:"tbr, reading, read or dnf"}[t]||"";
+    hint.textContent={genre:"Books whose genre includes this. MM Romance also catches YA MM Romance.",trope:"Books tagged with this exact trope.",series:"Every book in this series, in reading order.",burn:"Slow Burn or Fast Burn",ending:"HEA or HFN",status:"tbr, reading, read or dnf"}[t]||"";
   }
   syncType();
   typeEl.addEventListener("change",syncType);
@@ -1830,7 +1833,7 @@ const DEFAULT_SHELVES = [
   ["mm-fantasy","MM Fantasy Romance","genre","MM Fantasy Romance","#6B2C91",11],["mm-holiday","MM Holiday Romance","genre","MM Holiday Romance","#0A8047",12]
 ];
 /* Tab ids in "Books, Movies & Music Tracker", so one published link is enough */
-const DEFAULT_GIDS = { tbr: "1489619976", tbw: "1844088188", showReviews: "2111002717", albums: "1273753509", musicReviews: "301" };
+const DEFAULT_GIDS = { tbr: "1489619976", series: "1648175341", tbw: "1844088188", showReviews: "2111002717", albums: "1273753509", musicReviews: "301" };
 function linksFromPublished(url){
   const m = String(url || "").match(/\/spreadsheets\/d\/e\/([A-Za-z0-9_-]+)/);
   if(!m) return null;
@@ -1843,7 +1846,8 @@ const SHEET_TABS = [
   ["tbw","TBW List","Movies and shows to watch"],
   ["showReviews","Show Rating & Reviews","Your movie and show ratings"],
   ["albums","Albums to Listen To","Albums to listen to"],
-  ["musicReviews","Music Rating & Reviews","Your album ratings"]
+  ["musicReviews","Music Rating & Reviews","Your album ratings"],
+  ["series","Series","Reading order for each series (optional)"]
 ];
 
 function uniqueId(seen,base){ const n=(seen.get(base)||0)+1; seen.set(base,n); return n>1?base+"-"+n:base; }
@@ -1954,7 +1958,7 @@ function colsFrom(header, spec){
   return (r, k) => idx[k] >= 0 ? (r[idx[k]] ?? "") : "";
 }
 async function fetchTab(key){
-  const url = (SETTINGS.sheets || {})[key];
+  const url = (SETTINGS.sheets || {})[key] || (key === "series" && (linksFromPublished(SETTINGS.published) || {}).series);
   if(!url) return null;
   const res = await fetch(url, { cache: "no-store" });
   if(!res.ok) throw new Error("http " + res.status);
@@ -1964,6 +1968,29 @@ async function fetchTab(key){
   return { header: rows[0] || [], rows: rows.slice(1).map((r, i) => ({ r, row: i + 2 })) };
 }
 const isTrue = v => String(v).trim().toUpperCase() === "TRUE";
+/* The sheet's Series tab: one row per series, books listed left to right in reading order. */
+function buildSeriesTab(tab){
+  const m = new Map(), h = tab.header.map(x => norm(x));
+  const ni = h.findIndex(x => /series name/.test(x)), ai = h.findIndex(x => /^author/.test(x)), ti = h.findIndex(x => /book titles/.test(x));
+  if(ni < 0 || ti < 0) return m;
+  const end = h.findIndex((x, i) => i > ti && /genre/.test(x));
+  for(const {r} of tab.rows){
+    const name = String(r[ni] || "").trim(); if(!name) continue;
+    const titles = r.slice(ti, end > 0 ? end : undefined).map(x => String(x || "").trim()).filter(Boolean);
+    if(!titles.length) continue;
+    const k = norm(name); if(!m.has(k)) m.set(k, []);
+    m.get(k).push({name, author: ai >= 0 ? String(r[ai] || "").trim() : "", titles, keys: titles.map(nkey)});
+  }
+  return m;
+}
+const titleAt = (row, b) => { const k = nkey(b.title); let i = row.keys.indexOf(k); if(i < 0) i = row.keys.findIndex(x => x && k && (x.startsWith(k) || k.startsWith(x))); return i; };
+/* Two series can share a name (different authors): pick the row that lists this book, else the one by the same author. */
+function seriesRow(b){
+  const rows = b && b.seriesName ? seriesTab.get(norm(b.seriesName)) : null; if(!rows) return null;
+  if(rows.length === 1) return rows[0];
+  return rows.find(r => titleAt(r, b) >= 0) || rows.find(r => norm(r.author).includes(norm(lastName(b.author)))) || rows[0];
+}
+function seriesPos(b){ const r = seriesRow(b); return r ? titleAt(r, b) : -1; }
 function buildBooks(tab){
   const col = colsFrom(tab.header, {read:/^read/,title:/^title/,author:/^author/,cover:/cover url|^cover$/,pages:/page/,pub:/publication/,pov:/^pov/,series:/^series$/,count:/how many/,sname:/name of series/,genre:/^genre/,tropes:/trope/,ending:/hea|hfn/,burn:/burn/,syn:/synopsis/});
   const seen = new Map(), cat = new Map(); synMap.clear();
@@ -2026,7 +2053,8 @@ async function loadSheets(){
   const keys = SHEET_TABS.map(t => t[0]);
   const results = await Promise.allSettled(keys.map(fetchTab));
   const got = {};
-  results.forEach((res, i) => { if(res.status === "fulfilled") got[keys[i]] = res.value; else sheetErrors.push(SHEET_TABS[i][1]); });
+  results.forEach((res, i) => { if(res.status === "fulfilled") got[keys[i]] = res.value; else if(keys[i] !== "series") sheetErrors.push(SHEET_TABS[i][1]); });
+  if(got.series) seriesTab = buildSeriesTab(got.series);
   if(got.tbr) catalog = buildBooks(got.tbr); else if(!(SETTINGS.sheets || {}).tbr) catalog = new Map();
   if(got.tbw || got.showReviews) wcat = buildWatch(got.tbw, got.showReviews);
   if(got.albums || got.musicReviews) lcat = buildAlbums(got.albums, got.musicReviews);
