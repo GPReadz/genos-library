@@ -410,7 +410,7 @@ const SHEET_ID = "1EMXaMuS2MEJMCFAkzwDazlnf9TjfQ0eJ_bkW1hjDtpc";
 const SHEET_TAB = "TBR List";
 const NEUTRAL = "#7A6A5A";
 const STATUS = {tbr:"TBR", reading:"Reading", read:"Read", dnf:"DNF"};
-const RULES = {genre:"Genre", trope:"Trope", burn:"Burn", ending:"Ending", status:"Status", manual:"Hand-picked"};
+const RULES = {genre:"Genre", trope:"Trope", series:"Series", burn:"Burn", ending:"Ending", status:"Status", manual:"Hand-picked"};
 const SHEET_FIELDS = ["title","author","pages","published","pov","seriesName","seriesCount","genre","tropes","ending","burn"];
 const PAGE = 240;
 
@@ -418,7 +418,7 @@ let db=null, assets=null, downloads=null, mcp=null;
 let catalog=new Map(), userDocs=new Map(), shelves=[], meta=null;
 let catalogLoaded=false, userLoaded=false;
 let ALL=[], allDirty=true;
-const ui={hideEmpty:true, filter:"all", search:"", sort:"author", limit:PAGE, caseSearch:"", caseSort:"author", caseLimit:PAGE, listLimit:200};
+const ui={seriesSearch:"", seriesSort:"name", seriesLimit:30, hideEmpty:true, filter:"all", search:"", sort:"author", limit:PAGE, caseSearch:"", caseSort:"author", caseLimit:PAGE, listLimit:200};
 const synCache=new Map();
 const main=document.getElementById("main");
 const syncEl=document.getElementById("sync");
@@ -453,6 +453,7 @@ function matches(shelf,b){
   switch(shelf.type){
     case "genre": { if(!v) return false; const bg=norm(b.genre); const p=PALETTE.find(x=>norm(x.name)===v); return p ? genreNames(p.name).some(n=>bg.includes(n)) : bg.includes(v); }
     case "trope": return (b.tropes||[]).some(t=>norm(t)===v);
+    case "series": return !!v && norm(b.seriesName)===v;
     case "burn": return norm(b.burn)===v;
     case "ending": return norm(b.ending)===v;
     case "status": return b.status===shelf.value;
@@ -466,7 +467,9 @@ const SORTS={
   title:(a,b)=>String(a.title).replace(/^the\s+/i,"").localeCompare(String(b.title).replace(/^the\s+/i,"")),
   genre:(a,b)=>String(a.genre).localeCompare(String(b.genre))||SORTS.author(a,b),
   sheet:(a,b)=>(a.row??1e9)-(b.row??1e9),
-  pages:(a,b)=>(Number(a.pages)||0)-(Number(b.pages)||0)
+  pages:(a,b)=>(Number(a.pages)||0)-(Number(b.pages)||0),
+  // Series order: by publication date (the sheet has no book numbers), then title.
+  series:(a,b)=>{ const d=x=>{ const t=Date.parse(x.published||""); return isNaN(t)?Infinity:t; }; return (d(a)-d(b))||SORTS.title(a,b); }
 };
 function fmtDate(d){ if(!d) return ""; const t=new Date(d+"T12:00:00"); return isNaN(t)?d:t.toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"}); }
 function starPts(cx,cy,R,r){const p=[];for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5;const rad=i%2?r:R;p.push([cx+Math.cos(a)*rad,cy+Math.sin(a)*rad]);}return p;}
@@ -522,13 +525,13 @@ async function patchUser(id,fields){
 }
 
 /* ---------- routing ---------- */
-function view(){const h=location.hash.slice(1); if(h.startsWith("case-")) return "case"; return ["tbr","shelves","read","books","watch","watched","listen","listened","settings"].includes(h)?h:"tbr";}
-const ROOM_TABS={books:[["tbr","Main Shelf"],["shelves","Shelves"],["read","Read & Reviewed"],["books","All Books"]],watch:[["watch","VHS Shelf"],["watched","Watched & Reviewed"]],listen:[["listen","Record Wall"],["listened","Listened & Rated"]]};
+function view(){const h=location.hash.slice(1); if(h.startsWith("case-")) return "case"; return ["tbr","shelves","series","read","books","watch","watched","listen","listened","settings"].includes(h)?h:"tbr";}
+const ROOM_TABS={books:[["tbr","Main Shelf"],["shelves","Shelves"],["series","Series"],["read","Read & Reviewed"],["books","All Books"]],watch:[["watch","VHS Shelf"],["watched","Watched & Reviewed"]],listen:[["listen","Record Wall"],["listened","Listened & Rated"]]};
 const roomOf=v=>["watch","watched"].includes(v)?"watch":["listen","listened"].includes(v)?"listen":"books";
 const lastView={books:"tbr",watch:"watch",listen:"listen"};
 document.querySelectorAll(".room").forEach(r=>r.addEventListener("click",()=>{location.hash=lastView[r.dataset.room];}));
 document.getElementById("tabs").addEventListener("click",e=>{const t=e.target.closest(".tab"); if(t) location.hash=t.dataset.view;});
-window.addEventListener("hashchange",()=>{ui.caseLimit=PAGE;ui.caseSearch="";render();window.scrollTo(0,0);});
+window.addEventListener("hashchange",()=>{ui.caseLimit=PAGE;ui.caseSearch="";ui.seriesLimit=30;render();window.scrollTo(0,0);});
 document.getElementById("addBook").addEventListener("click",()=>{const r=roomOf(view()); if(r==="watch") openWatchEdit(null); else if(r==="listen") openAlbumEdit(null); else openEdit(null);});
 
 function render(){
@@ -550,7 +553,7 @@ function render(){
     html+= v==="listened"?renderListened():renderRecordWall();
   }else{
   if(db && !catalog.size) html+=`<div class="banner"><span>${(SETTINGS.sheets||{}).tbr?"Your TBR List couldn't be read. Check its link in Settings.":"Add your TBR List link in Settings to fill the Main Shelf."}</span><a class="btn primary small" href="#settings">Open Settings</a></div>`;
-  html+= v==="tbr"?renderMain() : v==="shelves"?renderShelves() : v==="case"?renderCase() : v==="read"?renderRead() : renderBooks();
+  html+= v==="tbr"?renderMain() : v==="shelves"?renderShelves() : v==="series"?renderSeries() : v==="case"?renderCase() : v==="read"?renderRead() : renderBooks();
   }
   const key=colorKey(room);
   main.innerHTML=key?`<div class="with-key"><div class="view-main">${html}</div>${key}</div>`:html;
@@ -559,7 +562,7 @@ function render(){
 }
 
 /* ---------- spines ---------- */
-const APP_VERSION="Nov 24 · spine fit 6";
+const APP_VERSION="Nov 24 · series shelves";
 /* Phones keep an old copy of the page for a while. On open, fetch a fresh copy; if it is a newer version, reload once into it. */
 (async()=>{ try{
   const r=await fetch(location.pathname+location.search,{cache:"reload"}); if(!r.ok) return;
@@ -643,7 +646,7 @@ function renderShelves(){
   const list=[...shelves].sort((a,b)=>(a.order??99)-(b.order??99)||String(a.name).localeCompare(b.name));
   let hidden=0, out="";
   for(const s of list){
-    const inShelf=all.filter(b=>matches(s,b)).sort(SORTS.author);
+    const inShelf=all.filter(b=>matches(s,b)).sort(s.type==="series"?SORTS.series:SORTS.author);
     if(ui.hideEmpty && !inShelf.length){hidden++;continue;}
     const prev=inShelf.slice(0,40);
     out+=`<section class="shelf" style="--c:${esc(s.color||NEUTRAL)}">
@@ -660,12 +663,50 @@ function renderCase(){
   const id=location.hash.slice(6); const s=shelves.find(x=>x.id===id);
   if(!s) return `<div class="empty"><h2>That shelf isn't here</h2><p><a class="linkish" href="#shelves">Back to all shelves</a></p></div>`;
   const inShelf=books().filter(b=>matches(s,b));
-  const list=filterSearch(inShelf,ui.caseSearch).sort(SORTS[ui.caseSort]); const shown=list.slice(0,ui.caseLimit);
+  const list=filterSearch(inShelf,ui.caseSearch).sort(s.type==="series"&&ui.caseSort==="author"?SORTS.series:SORTS[ui.caseSort]); const shown=list.slice(0,ui.caseLimit);
   let out=`<div class="view-head"><div><p class="sub"><a class="linkish" href="#shelves">All shelves</a></p><h1>${esc(s.name)}</h1><p class="sub">${ruleText(s)} · ${inShelf.length.toLocaleString()} books</p></div>
     <div class="toolbar"><input class="search" id="q-case" type="search" placeholder="Search this shelf" value="${esc(ui.caseSearch)}" aria-label="Search this shelf">${sortSelect("s-case",ui.caseSort)}<button class="btn" type="button" data-editshelf="${esc(s.id)}">Edit shelf</button><button class="btn primary" type="button" data-pick="${esc(s.id)}">Pick from this shelf</button></div></div>`;
   if(!list.length) return out+`<div class="empty"><h2>No matches</h2></div>`;
   out+=`<div class="case tinted" style="--c:${esc(s.color||NEUTRAL)}">${shown.map(spineHTML).join("")}</div>`;
   if(list.length>shown.length) out+=`<div class="more">Showing ${shown.length.toLocaleString()} of ${list.length.toLocaleString()}<button class="btn" type="button" id="more-case">Show more</button></div>`;
+  return out;
+}
+
+/* ---------- series ---------- */
+function seriesGroups(){
+  const m=new Map();
+  for(const b of books()){ const n=String(b.seriesName||"").trim(); if(!n) continue; const k=norm(n); if(!m.has(k)) m.set(k,{name:n,books:[]}); m.get(k).books.push(b); }
+  for(const g of m.values()){
+    g.books.sort(SORTS.series);
+    g.total=Math.max(g.books.length,...g.books.map(b=>Number(b.seriesCount)||0));
+    g.read=g.books.filter(b=>b.status==="read").length;
+    g.authors=[...new Set(g.books.map(b=>b.author).filter(Boolean))];
+    g.latest=Math.max(...g.books.map(b=>{const t=Date.parse(b.published||"");return isNaN(t)?0:t;}));
+  }
+  return [...m.values()];
+}
+function renderSeries(){
+  const q=norm(ui.seriesSearch);
+  let groups=seriesGroups().filter(g=>g.books.length>=2);
+  const all=groups.length;
+  if(q) groups=groups.filter(g=>norm(g.name+" "+g.authors.join(" ")+" "+g.books.map(b=>b.title).join(" ")).includes(q));
+  const by={name:(a,b)=>a.name.replace(/^(the|a|an)\s+/i,"").localeCompare(b.name.replace(/^(the|a|an)\s+/i,"")),size:(a,b)=>b.books.length-a.books.length||a.name.localeCompare(b.name),author:(a,b)=>lastName(a.authors[0]||"").localeCompare(lastName(b.authors[0]||""))||a.name.localeCompare(b.name),recent:(a,b)=>b.latest-a.latest};
+  groups.sort(by[ui.seriesSort]||by.name);
+  const shown=groups.slice(0,ui.seriesLimit);
+  let out=`<div class="view-head"><div><h1>Series</h1><p class="sub">${all.toLocaleString()} series with two or more books on your shelves, each in publication order</p></div>
+    <div class="toolbar"><input class="search" id="q-series" type="search" placeholder="Search series, author or book" value="${esc(ui.seriesSearch)}" aria-label="Search series">
+    <select class="sel" id="s-series" aria-label="Sort series">${[["name","Series name"],["author","Author"],["size","Most books"],["recent","Newest release"]].map(([k,l])=>`<option value="${k}" ${ui.seriesSort===k?"selected":""}>Sort: ${l}</option>`).join("")}</select></div></div>`;
+  if(!groups.length) return out+`<div class="empty"><h2>${all?"No series match":"No series yet"}</h2><p>${all?"Try another search.":"Books with a series name in your sheet show up here once two or more share one."}</p></div>`;
+  for(const g of shown){
+    const col=genreColor(g.books[0].genre);
+    const have=g.total>g.books.length?`${g.books.length} of ${g.total} books`:`${g.books.length} books`;
+    out+=`<section class="shelf" style="--c:${esc(col)}">
+      <div class="shelf-head"><h2 class="plaque">${esc(g.name)}</h2><span class="rule">${esc(g.authors.slice(0,2).join(" & "))}${g.authors.length>2?" & more":""}</span><span class="count">${have}${g.read?` · ${g.read} read`:""}</span>
+      <span class="right"><button class="btn ghost small" type="button" data-seriesshelf="${esc(g.name)}">Make a shelf</button></span></div>
+      <div class="niche">${g.books.map(spineHTML).join("")}</div>
+      <div class="ledge"></div></section>`;
+  }
+  if(groups.length>shown.length) out+=`<div class="more">Showing ${shown.length.toLocaleString()} of ${groups.length.toLocaleString()} series<button class="btn" type="button" id="more-series">Show more</button></div>`;
   return out;
 }
 
@@ -718,6 +759,7 @@ function wire(){
   on("[data-open]",el=>openDetail(el.dataset.open));
   on("[data-edit]",el=>openEdit(getBook(el.dataset.edit)));
   on("[data-editshelf]",el=>openShelf(shelves.find(s=>s.id===el.dataset.editshelf)));
+  on("[data-seriesshelf]",el=>{ const n=el.dataset.seriesshelf; const b0=books().find(b=>norm(b.seriesName)===norm(n)); openShelf(null,{type:"series",value:n,name:n,color:genreColor(b0&&b0.genre)}); });
   on("[data-post]",el=>openPost(getBook(el.dataset.post)));
   on("[data-filter]",el=>{ui.filter=el.dataset.filter;ui.listLimit=200;render();});
   on("[data-import]",()=>refreshSheets());
@@ -742,14 +784,16 @@ function wire(){
   if(g("newShelf")) g("newShelf").addEventListener("click",()=>openShelf(null));
   if(g("more-main")) g("more-main").addEventListener("click",()=>{ui.limit+=PAGE;render();});
   if(g("more-case")) g("more-case").addEventListener("click",()=>{ui.caseLimit+=PAGE;render();});
+  if(g("more-series")) g("more-series").addEventListener("click",()=>{ui.seriesLimit+=30;render();});
+  if(g("s-series")) g("s-series").addEventListener("change",e=>{ui.seriesSort=e.target.value;ui.seriesLimit=30;render();});
   if(g("more-list")) g("more-list").addEventListener("click",()=>{ui.listLimit+=200;render();});
   if(g("s-main")) g("s-main").addEventListener("change",e=>{ui.sort=e.target.value;render();});
   if(g("s-case")) g("s-case").addEventListener("change",e=>{ui.caseSort=e.target.value;render();});
   [["w-genre","genre"],["w-where","where"],["w-group","group"],["w-sort","sort"]].forEach(([id,k])=>{ if(g(id)) g(id).addEventListener("change",e=>{wui[k]=e.target.value;wui.limit=PAGE;render();}); });
   [["l-genre","genre"],["l-sort","sort"]].forEach(([id,k])=>{ if(g(id)) g(id).addEventListener("change",e=>{lui[k]=e.target.value;render();}); });
   if(g("more-watch")) g("more-watch").addEventListener("click",()=>{wui.limit+=PAGE;render();});
-  const live=(id,key,reset)=>{ const el=g(id); if(!el) return; let t; el.addEventListener("input",()=>{ clearTimeout(t); t=setTimeout(()=>{ ui[key]=el.value; ui[reset]=reset==="listLimit"?200:PAGE; const pos=el.selectionStart; render(); const n=g(id); n.focus(); try{n.setSelectionRange(pos,pos);}catch(_){} },180); }); };
-  live("q-main","search","limit"); live("q-books","search","listLimit"); live("q-case","caseSearch","caseLimit");
+  const live=(id,key,reset)=>{ const el=g(id); if(!el) return; let t; el.addEventListener("input",()=>{ clearTimeout(t); t=setTimeout(()=>{ ui[key]=el.value; ui[reset]=reset==="listLimit"?200:reset==="seriesLimit"?30:PAGE; const pos=el.selectionStart; render(); const n=g(id); n.focus(); try{n.setSelectionRange(pos,pos);}catch(_){} },180); }); };
+  live("q-main","search","limit"); live("q-books","search","listLimit"); live("q-case","caseSearch","caseLimit"); live("q-series","seriesSearch","seriesLimit");
   const live2=(id,obj,key)=>{ const el=g(id); if(!el) return; let t; el.addEventListener("input",()=>{ clearTimeout(t); t=setTimeout(()=>{ obj[key]=el.value; const pos=el.selectionStart; render(); const n=g(id); n.focus(); try{n.setSelectionRange(pos,pos);}catch(_){} },180); }); };
   live2("q-watch",wui,"search"); live2("q-listen",lui,"search");
 }
@@ -786,7 +830,7 @@ function openDetail(id){
         ${fact("Publication date",esc(b.published))}
         ${fact("POV",esc(b.pov))}
         ${fact("Genre",b.genre?`<span style="display:inline-flex;align-items:center;gap:6px"><span class="dot" style="background:${c}"></span>${esc(b.genre)}</span>`:"")}
-        ${fact("Series",esc(b.seriesName)||(b.fromSheet?"Standalone":""))}
+        ${fact("Series",b.seriesName?`<button class="linkish" type="button" id="goseries">${esc(b.seriesName)}</button>`:(b.fromSheet?"Standalone":""))}
         ${fact("Books in series",esc(b.seriesCount))}
         ${fact("HEA / HFN",esc(b.ending))}
         ${fact("Burn pace",esc(b.burn))}
@@ -802,6 +846,7 @@ function openDetail(id){
   synopsisFor(b).then(t=>{ const el=ov.querySelector("#syn"); if(el) el.innerHTML=t?esc(t):'<span class="meta">No synopsis in your sheet for this one.</span>'; });
   if(!b.coverId) findCover("book",b).then(url=>{ if(!url) return; const el=ov.querySelector(".cover"); if(el) el.innerHTML=`<img src="${esc(url)}" alt="Cover of ${esc(b.title)}">`; const n=ov.querySelector(".cover-note"); if(n) n.textContent="Found automatically. Wrong cover? Paste a link in your sheet's Cover URL column, or upload a photo with Edit."; });
   ov.querySelector("#close").addEventListener("click",close);
+  const gs=ov.querySelector("#goseries"); if(gs) gs.addEventListener("click",()=>{ close(); ui.seriesSearch=b.seriesName; ui.seriesSort="name"; location.hash="series"; render(); });
   ov.querySelector("#edit").addEventListener("click",()=>openEdit(getBook(id)));
   const p=ov.querySelector("#post"); if(p) p.addEventListener("click",()=>openPost(getBook(id)));
   const quick=async(fields,then)=>{ try{ await patchUser(id,fields); then&&then(); }catch(e){ ov.querySelector("#err").textContent="Couldn't save. Check your connection and try again."; } };
@@ -929,8 +974,9 @@ async function openEdit(b){
 }
 
 /* ---------- shelf editor ---------- */
-function openShelf(s){
-  const isNew=!s; s=s?{...s}:{type:"genre",value:"",color:PALETTE[0].color,name:""};
+function openShelf(s,preset){
+  const isNew=!s; s=s?{...s}:{type:"genre",value:"",color:PALETTE[0].color,name:"",...(preset||{})};
+  const seriesNames=seriesGroups().filter(g=>g.books.length>=2).map(g=>g.name).sort((a,b)=>a.localeCompare(b));
   const tropes=[...new Set(books().flatMap(x=>x.tropes||[]))].sort();
   const ov=modal(`<h2>${isNew?"New shelf":"Edit shelf"}</h2>
   <div class="grid">
@@ -947,9 +993,9 @@ function openShelf(s){
   const setColor=c=>{color=c;ov.querySelector("#s-color").value=c;ov.querySelectorAll(".sw").forEach(x=>x.setAttribute("aria-pressed",x.dataset.c.toLowerCase()===c.toLowerCase()));};
   function syncType(){
     const t=typeEl.value; wrap.hidden=t==="manual";
-    const opts={genre:PALETTE.map(p=>p.name),trope:tropes,burn:["Slow Burn","Fast Burn"],ending:["HEA","HFN"],status:Object.keys(STATUS)}[t]||[];
+    const opts={genre:PALETTE.map(p=>p.name),trope:tropes,series:seriesNames,burn:["Slow Burn","Fast Burn"],ending:["HEA","HFN"],status:Object.keys(STATUS)}[t]||[];
     dl.innerHTML=opts.map(o=>`<option value="${esc(o)}">`).join("");
-    hint.textContent={genre:"Books whose genre includes this. MM Romance also catches YA MM Romance.",trope:"Books tagged with this exact trope.",burn:"Slow Burn or Fast Burn",ending:"HEA or HFN",status:"tbr, reading, read or dnf"}[t]||"";
+    hint.textContent={genre:"Books whose genre includes this. MM Romance also catches YA MM Romance.",trope:"Books tagged with this exact trope.",series:"Every book in this series, in publication order.",burn:"Slow Burn or Fast Burn",ending:"HEA or HFN",status:"tbr, reading, read or dnf"}[t]||"";
   }
   syncType();
   typeEl.addEventListener("change",syncType);
