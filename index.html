@@ -109,6 +109,29 @@ select.sel{background:var(--panel);border:1px solid var(--line);border-radius:8p
 .stat b{display:block;font-family:var(--display);font-weight:400;font-size:30px;font-variant-numeric:tabular-nums}
 .stat span{font-size:13px;color:var(--muted)}
 .reviews{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:16px}
+.jsec{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 18px 20px;margin:0 0 22px}
+.jsec h2{font-family:var(--display);font-weight:400;font-size:24px;margin:0}
+.jsec .jhead{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.jprog{font-size:14px;color:var(--muted)} .jprog b{color:var(--text)}
+.jbar{height:6px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:6px;width:180px}.jbar i{display:block;height:100%;background:var(--accent)}
+.rainbow{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.rtile{border-radius:12px;padding:10px;border:1px solid var(--line);background:rgba(255,255,255,.02);min-height:150px;display:flex;flex-direction:column;gap:8px}
+.rtile .sw{display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px}
+.rtile .sw i{width:22px;height:22px;border-radius:50%;background:var(--sw);border:1px solid rgba(255,255,255,.25);flex:none}
+.rtile .sw .n{margin-left:auto;color:var(--muted);font-weight:500;font-size:12px}
+.rtile.done{border-color:var(--sw);box-shadow:inset 0 0 0 1px var(--sw)}
+.rtile .thumbs{display:flex;flex-wrap:wrap;gap:6px}
+.jthumb{width:44px;height:64px;border-radius:4px;background:#2a2522 center/cover no-repeat;border:1px solid rgba(255,255,255,.12);padding:0;cursor:pointer;overflow:hidden;font-size:8px;color:#fff;text-align:center;line-height:1.1}
+.jthumb.sq{height:44px}
+.rtile .empty-s{font-size:12px;color:var(--muted);margin:auto 0}
+.alpha{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px}
+.acell{border:1px solid var(--line);border-radius:10px;padding:8px 10px;min-height:74px;display:flex;flex-direction:column;gap:2px;background:rgba(255,255,255,.02);text-align:left;color:inherit;font:inherit;cursor:default}
+.acell .L{font-family:var(--display);font-size:26px;line-height:1}
+.acell .t{font-size:12px;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.acell .m{font-size:11px;color:var(--muted)}
+.acell.done{border-color:var(--accent);background:rgba(212,180,106,.08);cursor:pointer}
+.acell.done .L{color:var(--accent)}
+.jnote{font-size:13px;color:var(--muted);margin:10px 0 0}
 .rcard{--c:#7a6a5a;background:var(--panel);border:1px solid var(--line);border-left:5px solid var(--c);border-radius:10px;padding:16px;display:grid;grid-template-columns:96px 1fr;gap:16px}
 .thumb{width:96px;height:144px;border-radius:4px;overflow:hidden;background:color-mix(in srgb,var(--c) 75%,#0d0907);display:flex;align-items:center;justify-content:center;text-align:center;font-family:var(--display);font-size:13px;padding:6px;color:#fff;border:0}
 .thumb img{width:100%;height:100%;object-fit:cover}
@@ -419,7 +442,7 @@ let db=null, assets=null, downloads=null, mcp=null;
 let catalog=new Map(), userDocs=new Map(), shelves=[], meta=null, seriesTab=new Map();
 let catalogLoaded=false, userLoaded=false;
 let ALL=[], allDirty=true;
-const ui={seriesSearch:"", seriesSort:"name", seriesLimit:30, hideEmpty:true, filter:"all", search:"", sort:"author", limit:PAGE, caseSearch:"", caseSort:"author", caseLimit:PAGE, listLimit:200};
+const ui={jYear:{book:"all",watch:"all",album:"all"},seriesSearch:"", seriesSort:"name", seriesLimit:30, hideEmpty:true, filter:"all", search:"", sort:"author", limit:PAGE, caseSearch:"", caseSort:"author", caseLimit:PAGE, listLimit:200};
 const synCache=new Map();
 const main=document.getElementById("main");
 const syncEl=document.getElementById("sync");
@@ -531,9 +554,9 @@ async function patchUser(id,fields){
 }
 
 /* ---------- routing ---------- */
-function view(){const h=location.hash.slice(1); if(h.startsWith("case-")) return "case"; return ["tbr","shelves","series","read","books","watch","watched","listen","listened","settings"].includes(h)?h:"tbr";}
-const ROOM_TABS={books:[["tbr","Main Shelf"],["shelves","Shelves"],["series","Series"],["read","Read & Reviewed"],["books","All Books"]],watch:[["watch","VHS Shelf"],["watched","Watched & Reviewed"]],listen:[["listen","Record Wall"],["listened","Listened & Rated"]]};
-const roomOf=v=>["watch","watched"].includes(v)?"watch":["listen","listened"].includes(v)?"listen":"books";
+function view(){const h=location.hash.slice(1); if(h.startsWith("case-")) return "case"; return ["tbr","shelves","series","read","journal","books","watch","watched","wjournal","listen","listened","ljournal","settings"].includes(h)?h:"tbr";}
+const ROOM_TABS={books:[["tbr","Main Shelf"],["shelves","Shelves"],["series","Series"],["read","Read & Reviewed"],["journal","Journal"],["books","All Books"]],watch:[["watch","VHS Shelf"],["watched","Watched & Reviewed"],["wjournal","Journal"]],listen:[["listen","Record Wall"],["listened","Listened & Rated"],["ljournal","Journal"]]};
+const roomOf=v=>["watch","watched","wjournal"].includes(v)?"watch":["listen","listened","ljournal"].includes(v)?"listen":"books";
 const lastView={books:"tbr",watch:"watch",listen:"listen"};
 document.querySelectorAll(".room").forEach(r=>r.addEventListener("click",()=>{location.hash=lastView[r.dataset.room];}));
 document.getElementById("tabs").addEventListener("click",e=>{const t=e.target.closest(".tab"); if(t) location.hash=t.dataset.view;});
@@ -553,13 +576,13 @@ function render(){
   if(!catalogLoaded||!userLoaded){ main.innerHTML=html+`<p class="hidden-note">Opening your library…</p>`; return; }
   if(room==="watch"){
     if(db&&wLoaded&&!wcat.size) html+=`<div class="banner"><span>${(SETTINGS.sheets||{}).tbw?"Your watch list couldn't be read. Check its link in Settings.":"Add your TBW List link in Settings to fill the VHS shelf."}</span><a class="btn primary small" href="#settings">Open Settings</a></div>`;
-    html+= v==="watched"?renderWatched():renderWatchShelf();
+    html+= v==="watched"?renderWatched():v==="wjournal"?renderJournal("watch"):renderWatchShelf();
   }else if(room==="listen"){
     if(db&&lLoaded&&!lcat.size) html+=`<div class="banner"><span>${(SETTINGS.sheets||{}).albums?"Your albums couldn't be read. Check the link in Settings.":"Add your Albums to Listen To link in Settings to fill the record wall."}</span><a class="btn primary small" href="#settings">Open Settings</a></div>`;
-    html+= v==="listened"?renderListened():renderRecordWall();
+    html+= v==="listened"?renderListened():v==="ljournal"?renderJournal("album"):renderRecordWall();
   }else{
   if(db && !catalog.size) html+=`<div class="banner"><span>${(SETTINGS.sheets||{}).tbr?"Your TBR List couldn't be read. Check its link in Settings.":"Add your TBR List link in Settings to fill the Main Shelf."}</span><a class="btn primary small" href="#settings">Open Settings</a></div>`;
-  html+= v==="tbr"?renderMain() : v==="shelves"?renderShelves() : v==="series"?renderSeries() : v==="case"?renderCase() : v==="read"?renderRead() : renderBooks();
+  html+= v==="tbr"?renderMain() : v==="shelves"?renderShelves() : v==="series"?renderSeries() : v==="case"?renderCase() : v==="read"?renderRead() : v==="journal"?renderJournal("book") : renderBooks();
   }
   const key=colorKey(room);
   main.innerHTML=key?`<div class="with-key"><div class="view-main">${html}</div>${key}</div>`:html;
@@ -568,7 +591,7 @@ function render(){
 }
 
 /* ---------- spines ---------- */
-const APP_VERSION="Nov 24 · nonfiction color";
+const APP_VERSION="Nov 27 · journal";
 /* Phones keep an old copy of the page for a while. On open, fetch a fresh copy; if it is a newer version, reload once into it. */
 (async()=>{ try{
   const r=await fetch(location.pathname+location.search,{cache:"reload"}); if(!r.ok) return;
@@ -718,6 +741,94 @@ function renderSeries(){
   return out;
 }
 
+/* ---------- journal: Read the Rainbow & Read the Alphabet ---------- */
+const RAINBOW=[["red","Red","#D33A3A"],["orange","Orange","#E8862A"],["yellow","Yellow","#E9C63B"],["green","Green","#3E9A52"],["blue","Blue","#2F6FC0"],["purple","Purple","#7B4BB5"],["pink","Pink","#E77BB0"],["brown","Brown","#7A5233"],["black","Black","#1C1A1A"],["white","White","#F4F1EA"]];
+const JKIND={
+  book:{items:()=>books(),done:x=>x.status==="read",date:x=>x.finished,cover:x=>x.coverId||autoCovers.get("book:"+x.id),verb:"Read",noun:"books",creator:"Author",who:x=>x.author,open:x=>openDetail(x.id),save:(x,f)=>patchUser(x.id,f),sq:false},
+  watch:{items:()=>watchItems(),done:x=>x.status==="seen",date:x=>x.finished,cover:x=>x.posterId,verb:"Watch",noun:"movies & shows",creator:null,who:()=>"",open:x=>openWatchDetail(x.id),save:(x,f)=>patchLayer("watch",x.id,wuser,f),sq:false},
+  album:{items:()=>albumItems(),done:x=>x.status==="listened",date:x=>x.listenedOn,cover:x=>x.coverId||autoCovers.get("album:"+x.id),verb:"Listen to",noun:"albums",creator:"Artist",who:x=>x.artist,open:x=>openAlbumDetail(x.id),save:(x,f)=>patchLayer("albums",x.id,luser,f),sq:true}
+};
+/* Cover colors: worked out once per image in the browser and remembered on this device. */
+let coverColors={}; try{ coverColors=JSON.parse(localStorage.getItem("gl-cc")||"{}"); }catch(_){ coverColors={}; }
+const ccBusy=new Set(); let ccQueue=[], ccRunning=false;
+function classifyPixels(d){
+  const w={}; RAINBOW.forEach(([k])=>w[k]=0);
+  for(let i=0;i<d.length;i+=4){
+    if(d[i+3]<128) continue;
+    const r=d[i]/255,g=d[i+1]/255,b=d[i+2]/255, mx=Math.max(r,g,b), mn=Math.min(r,g,b), l=(mx+mn)/2, dl=mx-mn;
+    const s=dl===0?0:dl/(1-Math.abs(2*l-1)); let h=0;
+    if(dl){ h=mx===r?((g-b)/dl)%6:mx===g?(b-r)/dl+2:(r-g)/dl+4; h=(h*60+360)%360; }
+    let k;
+    if(l<0.15) k="black"; else if(l>0.88&&s<0.4) k="white"; else if(s<0.18) k=l<0.5?"black":"white";
+    else if(h<14||h>=345) k=l>0.72?"pink":"red";
+    else if(h<42) k=(l<0.36||(s<0.45&&l<0.55))?"brown":"orange";
+    else if(h<68) k=l<0.33?"brown":"yellow";
+    else if(h<165) k="green"; else if(h<255) k="blue"; else if(h<290) k="purple"; else k="pink";
+    w[k]+= (k==="black"||k==="white")?0.7:(1+s);
+  }
+  return Object.entries(w).sort((a,b)=>b[1]-a[1])[0][0];
+}
+async function coverColorOf(src){
+  const img=await loadImg(src); const c=document.createElement("canvas"); c.width=c.height=32;
+  const x=c.getContext("2d",{willReadFrequently:true}); x.drawImage(img,0,0,32,32);
+  return classifyPixels(x.getImageData(0,0,32,32).data); // throws when the image's website blocks reading it
+}
+function queueColors(list){
+  for(const src of list){ if(!(src in coverColors)&&!ccBusy.has(src)){ ccBusy.add(src); ccQueue.push(src); } }
+  if(ccRunning||!ccQueue.length) return; ccRunning=true;
+  (async()=>{ let n=0;
+    const save=()=>{ try{ localStorage.setItem("gl-cc",JSON.stringify(coverColors)); }catch(_){} if(/journal$/.test(view())) render(); };
+    while(ccQueue.length){ const src=ccQueue.shift(); try{ coverColors[src]=await coverColorOf(src); }catch(_){ coverColors[src]=null; } ccBusy.delete(src); n++;
+      if(n%12===0&&ccQueue.length) save(); }
+    ccRunning=false; save(); })();
+}
+function rainbowOf(kind,x){ if(x.rainbow) return x.rainbow; const c=JKIND[kind].cover(x); if(!c) return null; const v=coverColors[blob(c)]; return v||null; }
+const firstLetter=t=>{ const m=String(t||"").replace(/^\s*(the|a|an)\s+/i,"").normalize("NFD").replace(/[̀-ͯ]/g,"").toUpperCase().match(/[A-Z]/); return m?m[0]:""; };
+function jThumb(kind,x){ const c=JKIND[kind].cover(x); return `<button class="jthumb${JKIND[kind].sq?" sq":""}" type="button" data-jpick="${esc(x.id)}" title="${esc(x.title)}" style="${c?`background-image:url('${esc(blob(c))}')`:""}">${c?"":esc(x.title.slice(0,24))}</button>`; }
+function renderJournal(kind){
+  const K=JKIND[kind];
+  let done=K.items().filter(K.done);
+  const years=[...new Set(done.map(x=>String(K.date(x)||"").slice(0,4)).filter(y=>/^\d{4}$/.test(y)))].sort().reverse();
+  const yr=ui.jYear[kind]; if(yr!=="all") done=done.filter(x=>String(K.date(x)||"").startsWith(yr));
+  done.sort((a,b)=>String(K.date(a)||"9").localeCompare(String(K.date(b)||"9"))||a.title.localeCompare(b.title));
+  if(kind!=="watch") queueCovers(kind,done.filter(x=>!K.cover(x)).slice(0,300));
+  queueColors(done.filter(x=>!x.rainbow&&K.cover(x)).map(x=>blob(K.cover(x))));
+  const title=kind==="book"?"Reading Journal":kind==="watch"?"Watching Journal":"Listening Journal";
+  let out=`<div class="view-head"><div><h1>${title}</h1><p class="sub">${done.length.toLocaleString()} ${K.noun} finished${yr==="all"?"":" in "+yr}</p></div>
+    <div class="toolbar"><select class="sel" id="jyear" aria-label="Year"><option value="all">All time</option>${years.map(y=>`<option value="${y}" ${yr===y?"selected":""}>${y}</option>`).join("")}</select></div></div>`;
+  // Rainbow
+  const byColor={}; RAINBOW.forEach(([k])=>byColor[k]=[]); const unsorted=[];
+  for(const x of done){ const c=rainbowOf(kind,x); if(c&&byColor[c]) byColor[c].push(x); else unsorted.push(x); }
+  const got=RAINBOW.filter(([k])=>byColor[k].length).length, pending=ccQueue.length+(ccRunning?1:0);
+  out+=`<section class="jsec"><div class="jhead"><div><h2>${K.verb} the Rainbow</h2><div class="jprog"><b>${got}</b> of ${RAINBOW.length} colors${pending?` · sorting ${pending} covers…`:""}</div><div class="jbar"><i style="width:${got/RAINBOW.length*100}%"></i></div></div></div>
+    <div class="rainbow">${RAINBOW.map(([k,l,hex])=>{ const xs=byColor[k]; return `<div class="rtile ${xs.length?"done":""}" style="--sw:${hex}"><div class="sw"><i></i>${l}<span class="n">${xs.length||""}</span></div>
+      ${xs.length?`<div class="thumbs">${xs.slice(0,6).map(x=>jThumb(kind,x)).join("")}${xs.length>6?`<span class="m" style="align-self:center;font-size:12px;color:var(--muted)">+${xs.length-6}</span>`:""}</div>`:`<div class="empty-s">Still looking for a ${l.toLowerCase()} cover</div>`}</div>`; }).join("")}</div>
+    ${unsorted.length?`<p class="jnote">${unsorted.length} without a color yet (no cover, or the cover's website won't share its colors). Tap one to pick its color:</p><div class="thumbs" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">${unsorted.slice(0,60).map(x=>jThumb(kind,x)).join("")}</div>`:""}
+    <p class="jnote">Colors are picked from each cover automatically. Tap a cover to change its color.</p></section>`;
+  // Alphabet
+  const board=(label,keyOf)=>{ const m=new Map(); for(const x of done){ const L=firstLetter(keyOf(x)); if(L&&!m.has(L)) m.set(L,x); }
+    const n=m.size; return `<section class="jsec"><div class="jhead"><div><h2>${K.verb} the Alphabet: ${label}</h2><div class="jprog"><b>${n}</b> of 26 letters</div><div class="jbar"><i style="width:${n/26*100}%"></i></div></div></div>
+    <div class="alpha">${"ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map(L=>{ const x=m.get(L); return x?`<button class="acell done" type="button" data-jopen="${esc(x.id)}"><span class="L">${L}</span><span class="t">${esc(label==="Titles"?x.title:keyOf(x))}</span><span class="m">${esc(label==="Titles"?(K.who(x)||""):x.title)}</span></button>`:`<div class="acell"><span class="L">${L}</span><span class="m">Open</span></div>`; }).join("")}</div></section>`; };
+  out+=board("Titles",x=>x.title);
+  if(K.creator) out+=board(K.creator==="Author"?"Authors":"Artists",x=>K.creator==="Author"?String(x.author||"").split(/&|,| and /)[0].trim():String(x.artist||""));
+  out+=`<p class="jnote">Titles skip a leading "The," "A" or "An."${kind==="book"?" Authors go by first name, like your sheet's Read the Alphabet tab.":kind==="album"?" Artists go by the first letter of their name, skipping a leading \"The.\"":""} Each letter shows the first ${kind==="book"?"book":kind==="watch"?"title":"album"} you finished for it.</p>`;
+  return out;
+}
+function openRainbowPick(kind,id){
+  const K=JKIND[kind], x=K.items().find(i=>i.id===id); if(!x) return;
+  const cur=rainbowOf(kind,x), auto=K.cover(x)?coverColors[blob(K.cover(x))]:null;
+  const ov=modal(`<h2>${esc(x.title)}</h2><p class="sub" style="margin-top:-4px">Which color is this cover?${auto?` It looked ${auto} to the app.`:""}</p>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:14px 0">${RAINBOW.map(([k,l,hex])=>`<button class="btn small" type="button" data-c="${k}" style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 4px;${cur===k?"outline:2px solid var(--accent)":""}"><i style="width:26px;height:26px;border-radius:50%;background:${hex};border:1px solid rgba(255,255,255,.3)"></i>${l}</button>`).join("")}</div>
+    <p class="err" id="err" role="alert"></p>
+    <div class="row"><button class="btn" type="button" id="open">Open ${kind==="book"?"book":kind==="watch"?"title":"album"}</button>${x.rainbow?`<button class="btn" type="button" id="auto">Use the app's pick</button>`:""}<button class="btn ghost" type="button" id="cancel">Close</button></div>`);
+  const close=()=>ov.remove();
+  ov.querySelector("#cancel").addEventListener("click",close);
+  ov.querySelector("#open").addEventListener("click",()=>{close();K.open(x);});
+  const set=async v=>{ try{ await K.save(x,{rainbow:v}); close(); render(); }catch(_){ ov.querySelector("#err").textContent="Couldn't save. Check your connection and try again."; } };
+  ov.querySelectorAll("[data-c]").forEach(b=>b.addEventListener("click",()=>set(b.dataset.c)));
+  const au=ov.querySelector("#auto"); if(au) au.addEventListener("click",()=>set(null));
+}
+
 /* ---------- read ---------- */
 function renderRead(){
   const read=books().filter(b=>b.status==="read").sort((a,b)=>String(b.finished||"").localeCompare(String(a.finished||""))||SORTS.author(a,b));
@@ -775,6 +886,9 @@ function wire(){
   on("[data-wopen]",el=>openWatchDetail(el.dataset.wopen));
   on("[data-wedit]",el=>openWatchEdit(getWatch(el.dataset.wedit)));
   on("[data-wpost]",el=>openPost(getWatch(el.dataset.wpost),"watch"));
+  { const jk={journal:"book",wjournal:"watch",ljournal:"album"}[view()];
+    if(jk){ on("[data-jpick]",el=>openRainbowPick(jk,el.dataset.jpick)); on("[data-jopen]",el=>{ const x=JKIND[jk].items().find(i=>i.id===el.dataset.jopen); if(x) JKIND[jk].open(x); });
+      const ys=document.getElementById("jyear"); if(ys) ys.addEventListener("change",e=>{ui.jYear[jk]=e.target.value;render();}); } }
   on("[data-lpost]",el=>openPost(getAlbum(el.dataset.lpost),"album"));
   on("[data-lopen]",el=>openAlbumDetail(el.dataset.lopen));
   on("[data-ledit]",el=>openAlbumEdit(getAlbum(el.dataset.ledit)));
