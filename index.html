@@ -29,7 +29,7 @@
   --display:"Gloock", Georgia, "Times New Roman", serif;
   --body:"Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
   color-scheme:dark;
-  --otter-preview:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 160 80%22%3E %3Cpath d=%22M118 46 C132 44 146 40 154 34 C150 44 136 52 118 54 Z%22 fill=%22%236b4329%22/%3E %3Cellipse cx=%2286%22 cy=%2248%22 rx=%2238%22 ry=%2215%22 fill=%22%237a4d2f%22/%3E %3Cellipse cx=%2284%22 cy=%2244%22 rx=%2230%22 ry=%229%22 fill=%22%23d9b48c%22/%3E %3Cellipse cx=%22114%22 cy=%2236%22 rx=%225%22 ry=%227%22 fill=%22%236b4329%22 transform=%22rotate(-20 114 36)%22/%3E %3Cellipse cx=%22106%22 cy=%2234%22 rx=%224.5%22 ry=%226.5%22 fill=%22%236b4329%22 transform=%22rotate(10 106 34)%22/%3E %3Ccircle cx=%2244%22 cy=%2240%22 r=%2216%22 fill=%22%237a4d2f%22/%3E %3Ccircle cx=%2233%22 cy=%2228%22 r=%224%22 fill=%22%236b4329%22/%3E%3Ccircle cx=%2252%22 cy=%2226%22 r=%224%22 fill=%22%236b4329%22/%3E %3Cellipse cx=%2241%22 cy=%2245%22 rx=%2210%22 ry=%227%22 fill=%22%23e7cba6%22/%3E %3Cpath d=%22M35 37 q3 -3 6 0%22 stroke=%22%232a1a10%22 stroke-width=%221.8%22 fill=%22none%22 stroke-linecap=%22round%22/%3E %3Cpath d=%22M47 36 q3 -3 6 0%22 stroke=%22%232a1a10%22 stroke-width=%221.8%22 fill=%22none%22 stroke-linecap=%22round%22/%3E %3Cellipse cx=%2242%22 cy=%2242%22 rx=%223.2%22 ry=%222.3%22 fill=%22%232a1a10%22/%3E %3Cpath d=%22M39 47 q3 2.5 6 0%22 stroke=%22%232a1a10%22 stroke-width=%221.3%22 fill=%22none%22 stroke-linecap=%22round%22/%3E %3Cpath d=%22M31 44 l-7 -1 M31 46 l-7 1 M52 44 l7 -1 M52 46 l7 1%22 stroke=%22%23f3e6d2%22 stroke-width=%22.8%22 stroke-linecap=%22round%22/%3E %3Cpath d=%22M68 22 L82 26 L82 42 L68 38 Z%22 fill=%22%23f4ecdf%22 stroke=%22%23c99a5e%22 stroke-width=%221%22/%3E %3Cpath d=%22M96 22 L82 26 L82 42 L96 38 Z%22 fill=%22%23fbf5ea%22 stroke=%22%23c99a5e%22 stroke-width=%221%22/%3E %3Cpath d=%22M71 28 l8 2.2 M71 31.5 l8 2.2 M85 30.2 l8 -2.2 M85 33.7 l8 -2.2%22 stroke=%22%23c9b89c%22 stroke-width=%22.9%22/%3E %3Cellipse cx=%2270%22 cy=%2240%22 rx=%224.5%22 ry=%223.5%22 fill=%22%236b4329%22/%3E %3Cellipse cx=%2294%22 cy=%2240%22 rx=%224.5%22 ry=%223.5%22 fill=%22%236b4329%22/%3E %3Cpath d=%22M0 56 q10 -5 20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 V80 H0 Z%22 fill=%22%233f8fa3%22 opacity=%22.85%22/%3E %3Cpath d=%22M0 62 q10 -4 20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0%22 stroke=%22%23bfe6ee%22 stroke-width=%221.4%22 fill=%22none%22 opacity=%22.7%22/%3E %3C/svg%3E");
+  --otter-preview:url("img/gp-readz.webp");
 }
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--ink);color:var(--text);font-family:var(--body);font-size:16px;line-height:1.45}
@@ -401,21 +401,23 @@ body[data-room="auth"] .actions .btn,body[data-room="auth"] .rooms{visibility:hi
 @media (prefers-reduced-motion:reduce){.spine{transition:none}.spine:hover{transform:none}}
 
 /* ---------- themes (Settings → Theme) ---------- */
-html[data-theme="otter"]{--case-wall:#1c3a40;--ink:#0f2a30;--panel:#143841;--raise:#1b4650;--line:#2b5a64;--text:#f3efe6;--muted:#a8c4c6;--accent:#eeaa6c;--wood:#9a7656;--wood-dark:#5e4430;--otter:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 160 80%22%3E %3Cpath d=%22M118 46 C132 44 146 40 154 34 C150 44 136 52 118 54 Z%22 fill=%22%236b4329%22/%3E %3Cellipse cx=%2286%22 cy=%2248%22 rx=%2238%22 ry=%2215%22 fill=%22%237a4d2f%22/%3E %3Cellipse cx=%2284%22 cy=%2244%22 rx=%2230%22 ry=%229%22 fill=%22%23d9b48c%22/%3E %3Cellipse cx=%22114%22 cy=%2236%22 rx=%225%22 ry=%227%22 fill=%22%236b4329%22 transform=%22rotate(-20 114 36)%22/%3E %3Cellipse cx=%22106%22 cy=%2234%22 rx=%224.5%22 ry=%226.5%22 fill=%22%236b4329%22 transform=%22rotate(10 106 34)%22/%3E %3Ccircle cx=%2244%22 cy=%2240%22 r=%2216%22 fill=%22%237a4d2f%22/%3E %3Ccircle cx=%2233%22 cy=%2228%22 r=%224%22 fill=%22%236b4329%22/%3E%3Ccircle cx=%2252%22 cy=%2226%22 r=%224%22 fill=%22%236b4329%22/%3E %3Cellipse cx=%2241%22 cy=%2245%22 rx=%2210%22 ry=%227%22 fill=%22%23e7cba6%22/%3E %3Cpath d=%22M35 37 q3 -3 6 0%22 stroke=%22%232a1a10%22 stroke-width=%221.8%22 fill=%22none%22 stroke-linecap=%22round%22/%3E %3Cpath d=%22M47 36 q3 -3 6 0%22 stroke=%22%232a1a10%22 stroke-width=%221.8%22 fill=%22none%22 stroke-linecap=%22round%22/%3E %3Cellipse cx=%2242%22 cy=%2242%22 rx=%223.2%22 ry=%222.3%22 fill=%22%232a1a10%22/%3E %3Cpath d=%22M39 47 q3 2.5 6 0%22 stroke=%22%232a1a10%22 stroke-width=%221.3%22 fill=%22none%22 stroke-linecap=%22round%22/%3E %3Cpath d=%22M31 44 l-7 -1 M31 46 l-7 1 M52 44 l7 -1 M52 46 l7 1%22 stroke=%22%23f3e6d2%22 stroke-width=%22.8%22 stroke-linecap=%22round%22/%3E %3Cpath d=%22M68 22 L82 26 L82 42 L68 38 Z%22 fill=%22%23f4ecdf%22 stroke=%22%23c99a5e%22 stroke-width=%221%22/%3E %3Cpath d=%22M96 22 L82 26 L82 42 L96 38 Z%22 fill=%22%23fbf5ea%22 stroke=%22%23c99a5e%22 stroke-width=%221%22/%3E %3Cpath d=%22M71 28 l8 2.2 M71 31.5 l8 2.2 M85 30.2 l8 -2.2 M85 33.7 l8 -2.2%22 stroke=%22%23c9b89c%22 stroke-width=%22.9%22/%3E %3Cellipse cx=%2270%22 cy=%2240%22 rx=%224.5%22 ry=%223.5%22 fill=%22%236b4329%22/%3E %3Cellipse cx=%2294%22 cy=%2240%22 rx=%224.5%22 ry=%223.5%22 fill=%22%236b4329%22/%3E %3Cpath d=%22M0 56 q10 -5 20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 V80 H0 Z%22 fill=%22%233f8fa3%22 opacity=%22.85%22/%3E %3Cpath d=%22M0 62 q10 -4 20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0%22 stroke=%22%23bfe6ee%22 stroke-width=%221.4%22 fill=%22none%22 opacity=%22.7%22/%3E %3C/svg%3E")}
+html[data-theme="otter"]{--case-wall:#1c3a40;--ink:#0f2a30;--panel:#143841;--raise:#1b4650;--line:#2b5a64;--text:#f3efe6;--muted:#a8c4c6;--accent:#eeaa6c;--wood:#9a7656;--wood-dark:#5e4430;--otter:url("img/otter-sit.webp");--otter-badge:url("img/otter-float.webp");--gp-logo:url("img/gp-readz.webp")}
 html[data-theme="otter"] body{background-image:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22120%22 height=%2240%22 viewBox=%220 0 120 40%22%3E%3Cpath d=%22M0 20 q15 -10 30 0 t30 0 t30 0 t30 0%22 stroke=%22%235fb3c4%22 stroke-width=%221.2%22 fill=%22none%22 opacity=%22.09%22/%3E%3C/svg%3E");background-size:120px 40px}
 html[data-theme="midnight"]{--case-wall:#121a31;--ink:#0d1222;--panel:#151c31;--raise:#1d2640;--line:#2c3758;--text:#eef1f8;--muted:#a3adc6;--accent:#b9c6f2;--wood:#2e3a5c;--wood-dark:#1b233a}
 html[data-theme="rose"]{--case-wall:#29171f;--ink:#1c1317;--panel:#271a20;--raise:#31222a;--line:#4a3340;--text:#f7ecef;--muted:#c4a9b3;--accent:#eaa3b6;--wood:#5b3444;--wood-dark:#3a2029}
 .mascot{display:none}
-html[data-theme="otter"] .mascot{display:block;width:104px;height:52px;background:var(--otter) center/contain no-repeat;margin:0 0 6px -6px;align-self:flex-end}
-html[data-theme="otter"] .empty::before{content:"";display:block;width:150px;height:75px;margin:0 auto 10px;background:var(--otter) center/contain no-repeat}
-@media (max-width:640px){html[data-theme="otter"] .mascot{width:72px;height:36px}}
+html[data-theme="otter"] .mascot{display:block;width:58px;height:62px;background:var(--otter) center bottom/contain no-repeat;margin:0 0 4px -8px;align-self:flex-end}
+html[data-theme="otter"] .empty::before{content:"";display:block;width:150px;height:140px;margin:0 auto 12px;background:var(--otter-badge) center/contain no-repeat}
+.otter-foot{display:none}
+html[data-theme="otter"] .otter-foot{display:block;width:120px;height:121px;margin:30px auto 26px;background:var(--gp-logo) center/contain no-repeat;opacity:.95}
+@media (max-width:640px){html[data-theme="otter"] .mascot{width:44px;height:47px}}
 .themes{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin:6px 0 4px}
 .tcard{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:14px;padding:0;overflow:hidden;background:none;text-align:left;color:var(--text);cursor:pointer}
 .tcard[aria-pressed="true"]{outline:2px solid var(--accent);outline-offset:2px}
 .tcard .tp{height:96px;position:relative;display:flex;align-items:flex-end;gap:5px;padding:12px;background:var(--t-ink)}
 .tcard .tp i{width:12px;border-radius:2px 2px 0 0;display:block}
 .tcard .tp .tl{position:absolute;left:0;right:0;bottom:0;height:9px;background:var(--t-wood)}
-.tcard .tp .ot{position:absolute;right:8px;top:8px;width:84px;height:42px;background:var(--otter-img) center/contain no-repeat}
+.tcard .tp .ot{position:absolute;right:10px;top:8px;width:78px;height:78px;background:var(--otter-img) center/contain no-repeat}
 .tcard .tb{display:block;padding:10px 12px 12px;background:var(--t-panel)}
 .tcard .tb .ds{display:block;margin-top:2px}
 .tcard .tb b{display:block;font-family:var(--display);font-weight:400;font-size:19px;color:var(--t-text)}
@@ -443,6 +445,7 @@ html[data-theme="otter"] .empty::before{content:"";display:block;width:150px;hei
   </div>
 </header>
 <main id="main"></main>
+<div class="otter-foot" role="img" aria-label="GP Readz"></div>
 <div id="modalRoot"></div>
 
 <script src="config.js"></script>
@@ -627,7 +630,7 @@ function render(){
 }
 
 /* ---------- spines ---------- */
-const APP_VERSION="Nov 27 · themes";
+const APP_VERSION="Nov 27 · otters";
 /* Phones keep an old copy of the page for a while. On open, fetch a fresh copy; if it is a newer version, reload once into it. */
 (async()=>{ try{
   const r=await fetch(location.pathname+location.search,{cache:"reload"}); if(!r.ok) return;
@@ -780,7 +783,7 @@ function renderSeries(){
 /* ---------- themes ---------- */
 const THEMES=[
   {id:"library",name:"Walnut Library",desc:"The original: dark walnut shelves and gold.",c:{ink:"#14100d",panel:"#1f1914",text:"#f3ece2",muted:"#b4a796",accent:"#d8b36a",wood:"#4a3220"}},
-  {id:"otter",name:"River Otter",desc:"River blues, driftwood shelves and a reading otter.",c:{ink:"#0f2a30",panel:"#143841",text:"#f3efe6",muted:"#a8c4c6",accent:"#eeaa6c",wood:"#9a7656"},otter:true},
+  {id:"otter",name:"River Otter",desc:"River blues, driftwood shelves and your GP Readz otters.",c:{ink:"#0f2a30",panel:"#143841",text:"#f3efe6",muted:"#a8c4c6",accent:"#eeaa6c",wood:"#9a7656"},otter:true},
   {id:"midnight",name:"Midnight",desc:"Deep navy with soft silver-blue.",c:{ink:"#0d1222",panel:"#151c31",text:"#eef1f8",muted:"#a3adc6",accent:"#b9c6f2",wood:"#2e3a5c"}},
   {id:"rose",name:"Rosewood",desc:"Plum-dark wood with blush pink.",c:{ink:"#1c1317",panel:"#271a20",text:"#f7ecef",muted:"#c4a9b3",accent:"#eaa3b6",wood:"#5b3444"}}
 ];
