@@ -114,7 +114,7 @@ select.sel{background:var(--panel);border:1px solid var(--line);border-radius:8p
 .jsec .jhead{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
 .jprog{font-size:14px;color:var(--muted)} .jprog b{color:var(--text)}
 .jbar{height:6px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:6px;width:180px}.jbar i{display:block;height:100%;background:var(--accent)}
-.rainbow{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.rainbow{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;align-items:start}
 .rtile{border-radius:12px;padding:10px;border:1px solid var(--line);background:rgba(255,255,255,.02);min-height:150px;display:flex;flex-direction:column;gap:8px}
 .rtile .sw{display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px}
 .rtile .sw i{width:22px;height:22px;border-radius:50%;background:var(--sw);border:1px solid rgba(255,255,255,.25);flex:none}
@@ -123,13 +123,24 @@ select.sel{background:var(--panel);border:1px solid var(--line);border-radius:8p
 .rtile .thumbs{display:flex;flex-wrap:wrap;gap:6px}
 .jthumb{width:44px;height:64px;border-radius:4px;background:#2a2522 center/cover no-repeat;border:1px solid rgba(255,255,255,.12);padding:0;cursor:pointer;overflow:hidden;font-size:8px;color:#fff;text-align:center;line-height:1.1}
 .jthumb.sq{height:44px}
+.jbest{display:flex;gap:10px;align-items:flex-start}
+.jbest .jthumb{width:62px;height:92px;flex:none}.jbest .jthumb.sq{height:62px}
+.jbest .bt{display:flex;flex-direction:column;gap:2px;min-width:0}
+.jbest .bt button{background:none;border:0;padding:0;color:var(--text);font:inherit;font-size:13px;font-weight:600;text-align:left;cursor:pointer;line-height:1.25;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.jstar{font-size:12px;color:var(--accent);letter-spacing:.5px}.jstar.none{color:var(--muted)}
+.jmore{background:none;border:0;padding:4px 0 0;color:var(--muted);font:inherit;font-size:12px;cursor:pointer;text-align:left;display:flex;align-items:center;gap:4px}
+.jmore:hover{color:var(--text)}.jmore .ar{display:inline-block;transition:transform .15s}.jmore[aria-expanded="true"] .ar{transform:rotate(90deg)}
+.jrest{display:flex;flex-direction:column;gap:3px;margin-top:4px;padding-top:6px;border-top:1px solid var(--line)}
+.jrest button{background:none;border:0;padding:2px 0;color:var(--text);font:inherit;font-size:12px;text-align:left;cursor:pointer;display:flex;justify-content:space-between;gap:6px}
+.jrest button span:last-child{color:var(--muted);white-space:nowrap}
 .rtile .empty-s{font-size:12px;color:var(--muted);margin:auto 0}
-.alpha{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px}
-.acell{border:1px solid var(--line);border-radius:10px;padding:8px 10px;min-height:74px;display:flex;flex-direction:column;gap:2px;background:rgba(255,255,255,.02);text-align:left;color:inherit;font:inherit;cursor:default}
+.alpha{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px;align-items:start}
+.acell{border:1px solid var(--line);border-radius:10px;padding:8px 10px;min-height:74px;display:flex;flex-direction:column;gap:2px;background:rgba(255,255,255,.02);text-align:left;color:inherit;font:inherit}
+.acell .pick{background:none;border:0;padding:0;color:inherit;font:inherit;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:2px}
 .acell .L{font-family:var(--display);font-size:26px;line-height:1}
 .acell .t{font-size:12px;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .acell .m{font-size:11px;color:var(--muted)}
-.acell.done{border-color:var(--accent);background:rgba(212,180,106,.08);cursor:pointer}
+.acell.done{border-color:var(--accent);background:rgba(212,180,106,.08)}
 .acell.done .L{color:var(--accent)}
 .jnote{font-size:13px;color:var(--muted);margin:10px 0 0}
 .rcard{--c:#7a6a5a;background:var(--panel);border:1px solid var(--line);border-left:5px solid var(--c);border-radius:10px;padding:16px;display:grid;grid-template-columns:96px 1fr;gap:16px}
@@ -442,7 +453,7 @@ let db=null, assets=null, downloads=null, mcp=null;
 let catalog=new Map(), userDocs=new Map(), shelves=[], meta=null, seriesTab=new Map();
 let catalogLoaded=false, userLoaded=false;
 let ALL=[], allDirty=true;
-const ui={jYear:{book:"all",watch:"all",album:"all"},seriesSearch:"", seriesSort:"name", seriesLimit:30, hideEmpty:true, filter:"all", search:"", sort:"author", limit:PAGE, caseSearch:"", caseSort:"author", caseLimit:PAGE, listLimit:200};
+const ui={jOpen:new Set(),jYear:{book:"all",watch:"all",album:"all"},seriesSearch:"", seriesSort:"name", seriesLimit:30, hideEmpty:true, filter:"all", search:"", sort:"author", limit:PAGE, caseSearch:"", caseSort:"author", caseLimit:PAGE, listLimit:200};
 const synCache=new Map();
 const main=document.getElementById("main");
 const syncEl=document.getElementById("sync");
@@ -591,7 +602,7 @@ function render(){
 }
 
 /* ---------- spines ---------- */
-const APP_VERSION="Nov 27 · journal";
+const APP_VERSION="Nov 27 · journal 2";
 /* Phones keep an old copy of the page for a while. On open, fetch a fresh copy; if it is a newer version, reload once into it. */
 (async()=>{ try{
   const r=await fetch(location.pathname+location.search,{cache:"reload"}); if(!r.ok) return;
@@ -785,6 +796,17 @@ function queueColors(list){
 function rainbowOf(kind,x){ if(x.rainbow) return x.rainbow; const c=JKIND[kind].cover(x); if(!c) return null; const v=coverColors[blob(c)]; return v||null; }
 const firstLetter=t=>{ const m=String(t||"").replace(/^\s*(the|a|an)\s+/i,"").normalize("NFD").replace(/[̀-ͯ]/g,"").toUpperCase().match(/[A-Z]/); return m?m[0]:""; };
 function jThumb(kind,x){ const c=JKIND[kind].cover(x); return `<button class="jthumb${JKIND[kind].sq?" sq":""}" type="button" data-jpick="${esc(x.id)}" title="${esc(x.title)}" style="${c?`background-image:url('${esc(blob(c))}')`:""}">${c?"":esc(x.title.slice(0,24))}</button>`; }
+const jRank=K=>(a,b)=>((Number(b.rating)||0)-(Number(a.rating)||0))||String(K.date(b)||"").localeCompare(String(K.date(a)||""))||a.title.localeCompare(b.title);
+const jStars=x=>{ const r=Number(x.rating)||0; return r?`<span class="jstar">${"★".repeat(Math.floor(r))}${r%1>=0.5?"½":""} ${r}</span>`:`<span class="jstar none">Not rated</span>`; };
+function jMore(key,rest,noun){
+  if(!rest.length) return "";
+  const open=ui.jOpen.has(key);
+  return `<button class="jmore" type="button" data-jmore="${esc(key)}" aria-expanded="${open}"><span class="ar">▸</span>${open?"Hide":`${rest.length} more ${rest.length===1?noun.replace(/(books|titles|albums)$/,m=>m.slice(0,-1)):noun}`}</button>`;
+}
+function jRestList(key,rest,label){
+  if(!ui.jOpen.has(key)||!rest.length) return "";
+  return `<div class="jrest">${rest.map(x=>`<button type="button" data-jopen="${esc(x.id)}"><span>${esc(label(x))}</span><span>${Number(x.rating)?"★ "+Number(x.rating):""}</span></button>`).join("")}</div>`;
+}
 function renderJournal(kind){
   const K=JKIND[kind];
   let done=K.items().filter(K.done);
@@ -801,17 +823,23 @@ function renderJournal(kind){
   for(const x of done){ const c=rainbowOf(kind,x); if(c&&byColor[c]) byColor[c].push(x); else unsorted.push(x); }
   const got=RAINBOW.filter(([k])=>byColor[k].length).length, pending=ccQueue.length+(ccRunning?1:0);
   out+=`<section class="jsec"><div class="jhead"><div><h2>${K.verb} the Rainbow</h2><div class="jprog"><b>${got}</b> of ${RAINBOW.length} colors${pending?` · sorting ${pending} covers…`:""}</div><div class="jbar"><i style="width:${got/RAINBOW.length*100}%"></i></div></div></div>
-    <div class="rainbow">${RAINBOW.map(([k,l,hex])=>{ const xs=byColor[k]; return `<div class="rtile ${xs.length?"done":""}" style="--sw:${hex}"><div class="sw"><i></i>${l}<span class="n">${xs.length||""}</span></div>
-      ${xs.length?`<div class="thumbs">${xs.slice(0,6).map(x=>jThumb(kind,x)).join("")}${xs.length>6?`<span class="m" style="align-self:center;font-size:12px;color:var(--muted)">+${xs.length-6}</span>`:""}</div>`:`<div class="empty-s">Still looking for a ${l.toLowerCase()} cover</div>`}</div>`; }).join("")}</div>
+    <div class="rainbow">${RAINBOW.map(([k,l,hex])=>{ const xs=byColor[k].sort(jRank(K)), best=xs[0], rest=xs.slice(1), key=kind+":rb:"+k;
+      return `<div class="rtile ${xs.length?"done":""}" style="--sw:${hex}"><div class="sw"><i></i>${l}<span class="n">${xs.length||""}</span></div>
+      ${best?`<div class="jbest">${jThumb(kind,best)}<div class="bt"><button type="button" data-jopen="${esc(best.id)}">${esc(best.title)}</button>${jStars(best)}</div></div>
+        ${jMore(key,rest,l.toLowerCase()+" "+(kind==="book"?"books":kind==="watch"?"titles":"albums"))}
+        ${ui.jOpen.has(key)?`<div class="thumbs" style="margin-top:4px">${rest.map(x=>jThumb(kind,x)).join("")}</div>`:""}`:`<div class="empty-s">Still looking for a ${l.toLowerCase()} cover</div>`}</div>`; }).join("")}</div>
     ${unsorted.length?`<p class="jnote">${unsorted.length} without a color yet (no cover, or the cover's website won't share its colors). Tap one to pick its color:</p><div class="thumbs" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">${unsorted.slice(0,60).map(x=>jThumb(kind,x)).join("")}</div>`:""}
     <p class="jnote">Colors are picked from each cover automatically. Tap a cover to change its color.</p></section>`;
   // Alphabet
-  const board=(label,keyOf)=>{ const m=new Map(); for(const x of done){ const L=firstLetter(keyOf(x)); if(L&&!m.has(L)) m.set(L,x); }
-    const n=m.size; return `<section class="jsec"><div class="jhead"><div><h2>${K.verb} the Alphabet: ${label}</h2><div class="jprog"><b>${n}</b> of 26 letters</div><div class="jbar"><i style="width:${n/26*100}%"></i></div></div></div>
-    <div class="alpha">${"ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map(L=>{ const x=m.get(L); return x?`<button class="acell done" type="button" data-jopen="${esc(x.id)}"><span class="L">${L}</span><span class="t">${esc(label==="Titles"?x.title:keyOf(x))}</span><span class="m">${esc(label==="Titles"?(K.who(x)||""):x.title)}</span></button>`:`<div class="acell"><span class="L">${L}</span><span class="m">Open</span></div>`; }).join("")}</div></section>`; };
+  const board=(label,keyOf)=>{ const m=new Map(); for(const x of done){ const L=firstLetter(keyOf(x)); if(!L) continue; if(!m.has(L)) m.set(L,[]); m.get(L).push(x); }
+    const n=m.size, isT=label==="Titles", noun=kind==="book"?"books":kind==="watch"?"titles":"albums";
+    return `<section class="jsec"><div class="jhead"><div><h2>${K.verb} the Alphabet: ${label}</h2><div class="jprog"><b>${n}</b> of 26 letters</div><div class="jbar"><i style="width:${n/26*100}%"></i></div></div></div>
+    <div class="alpha">${"ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map(L=>{ const xs=(m.get(L)||[]).sort(jRank(K)), x=xs[0], rest=xs.slice(1), key=kind+":"+label+":"+L;
+      return x?`<div class="acell done"><button class="pick" type="button" data-jopen="${esc(x.id)}"><span class="L">${L}</span><span class="t">${esc(isT?x.title:keyOf(x))}</span><span class="m">${esc(isT?(K.who(x)||""):x.title)}</span></button>${jStars(x)}
+        ${jMore(key,rest,noun)}${jRestList(key,rest,y=>isT?y.title:keyOf(y)+" · "+y.title)}</div>`:`<div class="acell"><span class="L">${L}</span><span class="m">Open</span></div>`; }).join("")}</div></section>`; };
   out+=board("Titles",x=>x.title);
   if(K.creator) out+=board(K.creator==="Author"?"Authors":"Artists",x=>K.creator==="Author"?String(x.author||"").split(/&|,| and /)[0].trim():String(x.artist||""));
-  out+=`<p class="jnote">Titles skip a leading "The," "A" or "An."${kind==="book"?" Authors go by first name, like your sheet's Read the Alphabet tab.":kind==="album"?" Artists go by the first letter of their name, skipping a leading \"The.\"":""} Each letter shows the first ${kind==="book"?"book":kind==="watch"?"title":"album"} you finished for it.</p>`;
+  out+=`<p class="jnote">Titles skip a leading "The," "A" or "An."${kind==="book"?" Authors go by first name, like your sheet's Read the Alphabet tab.":kind==="album"?" Artists go by the first letter of their name, skipping a leading \"The.\"":""} Each color and letter shows your highest-rated ${kind==="book"?"book":kind==="watch"?"title":"album"}; tap the arrow to see the rest.</p>`;
   return out;
 }
 function openRainbowPick(kind,id){
@@ -887,7 +915,8 @@ function wire(){
   on("[data-wedit]",el=>openWatchEdit(getWatch(el.dataset.wedit)));
   on("[data-wpost]",el=>openPost(getWatch(el.dataset.wpost),"watch"));
   { const jk={journal:"book",wjournal:"watch",ljournal:"album"}[view()];
-    if(jk){ on("[data-jpick]",el=>openRainbowPick(jk,el.dataset.jpick)); on("[data-jopen]",el=>{ const x=JKIND[jk].items().find(i=>i.id===el.dataset.jopen); if(x) JKIND[jk].open(x); });
+    if(jk){ on("[data-jpick]",el=>openRainbowPick(jk,el.dataset.jpick));
+      on("[data-jmore]",el=>{ const k=el.dataset.jmore; ui.jOpen.has(k)?ui.jOpen.delete(k):ui.jOpen.add(k); const y=window.scrollY; render(); window.scrollTo(0,y); }); on("[data-jopen]",el=>{ const x=JKIND[jk].items().find(i=>i.id===el.dataset.jopen); if(x) JKIND[jk].open(x); });
       const ys=document.getElementById("jyear"); if(ys) ys.addEventListener("change",e=>{ui.jYear[jk]=e.target.value;render();}); } }
   on("[data-lpost]",el=>openPost(getAlbum(el.dataset.lpost),"album"));
   on("[data-lopen]",el=>openAlbumDetail(el.dataset.lopen));
